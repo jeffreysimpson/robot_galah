@@ -1,15 +1,17 @@
+import logging
+import logging.config
+from os.path import dirname, join
 from urllib.error import HTTPError, URLError
 
 from astropy.coordinates import SkyCoord
 from hips import WCSGeometry, make_sky_image
 from PIL import Image, ImageDraw, ImageFont
-import logging
-import logging.config
 
 
 def get_hips_image(the_star):
 
-    logging.config.fileConfig('logging.conf')
+    config_file = join(dirname(__file__), 'logging.conf')
+    logging.config.fileConfig(config_file)
     # create logger
     logger = logging.getLogger('get_images')
 

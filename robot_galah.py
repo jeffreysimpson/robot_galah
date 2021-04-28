@@ -1,21 +1,19 @@
 """Bot for GALAH."""
 
-from pathlib import Path
+import logging
+import logging.config
 from datetime import datetime
-
+from os.path import dirname, join
+from pathlib import Path
+from random import choice
 
 import numpy as np
 from astropy.io import fits
 
-from random import choice
-from plot_stellar_params import plot_stellar_params
+from do_the_tweeting import tweet
 from get_images import get_hips_image
 from plot_spectra import plot_spectra
-from do_the_tweeting import tweet
-
-
-import logging
-import logging.config
+from plot_stellar_params import plot_stellar_params
 
 
 def main():

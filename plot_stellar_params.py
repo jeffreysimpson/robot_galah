@@ -1,10 +1,12 @@
+import logging
+import logging.config
+from os.path import dirname, join
+
 import galah_plotting
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import rcParams  # font_manager,
 from matplotlib.colors import LogNorm
-import logging
-import logging.config
 
 
 def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
