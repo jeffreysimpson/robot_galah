@@ -92,7 +92,7 @@ def plot_spectra(the_star):
 
     axes['B'].set_title(f"Normalized HERMES spectrum of {star_id}")
     galah_plotting.redo_plot_lims(axes, redo_axes_list)
-    spec_file = "../tweet_content/spectra.png"
+    spec_file = "tweet_content/spectra.png"
     logger.info(f"Saving spectrum to {spec_file}")
     fig.savefig(spec_file, bbox_inches='tight',
                 dpi=500, transparent=False)

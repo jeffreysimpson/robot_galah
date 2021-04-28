@@ -52,7 +52,7 @@ def tweet(tweet_text, hips_survey, star_id):
 
     api = tweepy.API(auth)
 
-    media_id = [media_load(f"../tweet_content/{filename}", alt_text, api, logger)
+    media_id = [media_load(f"tweet_content/{filename}", alt_text, api, logger)
                 for filename, alt_text in alt_text_dict.items()]
     if np.any([m == "" for m in media_id]):
         logger.error(

@@ -90,7 +90,7 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
             axes['L_Z__Energy'].set_title("Orbital properties")
         galah_plotting.redo_plot_lims(axes, redo_axes_list)
         # plt.show()
-        save_file_loc = f"../tweet_content/stellar_params_{plot_list_base[0][0]}.png"
+        save_file_loc = f"tweet_content/stellar_params_{plot_list_base[0][0]}.png"
         try:
             fig.savefig(save_file_loc, bbox_inches='tight',
                         dpi=500, transparent=False)

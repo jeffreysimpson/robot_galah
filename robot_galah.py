@@ -25,7 +25,7 @@ def main():
 
     logger.info("STARTING")
 
-    p = Path("../tweet_content/.")
+    p = Path("tweet_content/.")
     logger.debug(f"Deleting the old files in {p.as_posix()} if they exist")
     for f in p.iterdir():
         if f.is_file:
