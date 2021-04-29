@@ -1,4 +1,7 @@
 
+import logging
+import logging.config
+from pathlib import Path
 import astropy.units as u
 import galah_plotting
 import numpy as np
@@ -6,8 +9,6 @@ import pandas as pd
 from astropy.constants import c
 from astropy.io import fits
 from pyvo.dal.ssa import SSAService
-import logging
-import logging.config
 
 from pyvo.dal.exceptions import DALFormatError
 
@@ -18,7 +19,10 @@ service = SSAService(URL)
 
 def plot_spectra(the_star):
 
-    logging.config.fileConfig('logging.conf')
+    cwd = Path.cwd()
+    tweet_content_dir = Path.joinpath(cwd, "tweet_content")
+    config_file = Path.joinpath(cwd, 'logging.conf')
+    logging.config.fileConfig(config_file)
     # create logger
     logger = logging.getLogger('plot_spectra')
 
@@ -92,7 +96,7 @@ def plot_spectra(the_star):
 
     axes['B'].set_title(f"Normalized HERMES spectrum of {star_id}")
     galah_plotting.redo_plot_lims(axes, redo_axes_list)
-    spec_file = "tweet_content/spectra.png"
+    spec_file = Path.joinpath(tweet_content_dir, "spectra.png")
     logger.info(f"Saving spectrum to {spec_file}")
     fig.savefig(spec_file, bbox_inches='tight',
                 dpi=500, transparent=False)

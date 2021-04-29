@@ -1,15 +1,19 @@
+import logging
+import logging.config
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 
 from astropy.coordinates import SkyCoord
 from hips import WCSGeometry, make_sky_image
 from PIL import Image, ImageDraw, ImageFont
-import logging
-import logging.config
 
 
 def get_hips_image(the_star):
 
-    logging.config.fileConfig('logging.conf')
+    cwd = Path.cwd()
+    tweet_content_dir = Path.joinpath(cwd, "tweet_content")
+    config_file = Path.joinpath(cwd, 'logging.conf')
+    logging.config.fileConfig(config_file)
     # create logger
     logger = logging.getLogger('get_images')
 
@@ -35,7 +39,7 @@ def get_hips_image(the_star):
             logger.error(e)
             return 1
         logger.info(f"Succesfully downloaded the sky image")
-        base_image = f"tweet_content/sky_image.jpg"
+        base_image = Path.joinpath(tweet_content_dir, "sky_image.jpg")
         result.write_image(base_image)
         logger.info(f"Saved image to {base_image}")
         break
@@ -55,7 +59,7 @@ def get_hips_image(the_star):
     draw.text((30, (1000 - 60)),
               f"{hips_survey.split('/')[2]}", (255, 255, 255), font=font)
     draw.text((800, (1000 - 60)), "2 arcmin", (255, 255, 255), font=font)
-    overlayed_image = f"tweet_content/sky_image_overlay.jpg"
+    overlayed_image = Path.joinpath(tweet_content_dir, "sky_image_overlay.jpg")
     img_sky.save(overlayed_image)
     logger.info(f"Saved overlayed image to {overlayed_image}")
     return hips_survey

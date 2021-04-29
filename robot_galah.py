@@ -1,8 +1,11 @@
 """Bot for GALAH."""
 
-from pathlib import Path
+import logging
+import logging.config
 from datetime import datetime
-
+from os.path import dirname, join
+from pathlib import Path
+from random import choice
 
 import numpy as np
 from astropy.io import fits
@@ -19,15 +22,18 @@ import logging.config
 
 
 def main():
-    logging.config.fileConfig('logging.conf')
+    cwd = Path.cwd()
+    config_file = Path.joinpath(cwd, 'logging.conf')
+    logging.config.fileConfig(config_file)
     # create logger
     logger = logging.getLogger('robot_galah')
 
     logger.info("STARTING")
 
-    p = Path("tweet_content/.")
-    logger.debug(f"Deleting the old files in {p.as_posix()} if they exist")
-    for f in p.iterdir():
+    tweet_content_dir = Path.joinpath(cwd, "tweet_content/.")
+    logger.debug(
+        f"Deleting the old files in {tweet_content_dir.as_posix()} if they exist")
+    for f in tweet_content_dir.iterdir():
         if f.is_file:
             logger.debug(f"Deleting {f.name}")
             f.unlink()

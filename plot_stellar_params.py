@@ -1,10 +1,13 @@
+import logging
+import logging.config
+# from os.path import dirname, join
+from pathlib import Path
+
 import galah_plotting
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import rcParams  # font_manager,
 from matplotlib.colors import LogNorm
-import logging
-import logging.config
 
 
 def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
@@ -14,7 +17,10 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
     rcParams['figure.facecolor'] = 'white'
     plt.style.use("dark_background")
 
-    logging.config.fileConfig('logging.conf')
+    cwd = Path.cwd()
+    tweet_content_dir = Path.joinpath(cwd, "tweet_content")
+    config_file = Path.joinpath(cwd, 'logging.conf')
+    logging.config.fileConfig(config_file)
     # create logger
     logger = logging.getLogger('plot_stellar_params')
 
@@ -90,7 +96,8 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
             axes['L_Z__Energy'].set_title("Orbital properties")
         galah_plotting.redo_plot_lims(axes, redo_axes_list)
         # plt.show()
-        save_file_loc = f"tweet_content/stellar_params_{plot_list_base[0][0]}.png"
+        save_file_loc = Path.joinpath(
+            tweet_content_dir, f"stellar_params_{plot_list_base[0][0]}.png")
         try:
             fig.savefig(save_file_loc, bbox_inches='tight',
                         dpi=500, transparent=False)
