@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 def get_hips_image(the_star):
 
-    cwd = Path.cwd()
+    cwd = Path(__file__).parent
     tweet_content_dir = Path.joinpath(cwd, "tweet_content")
     config_file = Path.joinpath(cwd, 'logging.conf')
     logging.config.fileConfig(config_file)

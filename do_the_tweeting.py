@@ -34,7 +34,7 @@ def media_load(filename, alt_text, api, logger):
 
 def tweet(tweet_text, hips_survey, gaia_dr3_id):
 
-    cwd = Path.cwd()
+    cwd = Path(__file__).parent
 
     tweet_content_dir = Path.joinpath(cwd, "tweet_content")
     config_file = Path.joinpath(cwd, 'logging.conf')

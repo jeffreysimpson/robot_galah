@@ -17,7 +17,7 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
     rcParams['figure.facecolor'] = 'white'
     plt.style.use("dark_background")
 
-    cwd = Path.cwd()
+    cwd = Path(__file__).parent
     tweet_content_dir = Path.joinpath(cwd, "tweet_content")
     config_file = Path.joinpath(cwd, 'logging.conf')
     logging.config.fileConfig(config_file)

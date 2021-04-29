@@ -26,7 +26,7 @@ def plot_spectra(the_star):
     rcParams['figure.facecolor'] = 'white'
     plt.style.use("dark_background")
 
-    cwd = Path.cwd()
+    cwd = Path(__file__).parent
     tweet_content_dir = Path.joinpath(cwd, "tweet_content")
     config_file = Path.joinpath(cwd, 'logging.conf')
     logging.config.fileConfig(config_file)

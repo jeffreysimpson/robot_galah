@@ -16,7 +16,7 @@ from plot_stellar_params import plot_stellar_params
 
 
 def main():
-    cwd = Path.cwd()
+    cwd = Path(__file__).parent
     config_file = Path.joinpath(cwd, 'logging.conf')
     logging.config.fileConfig(config_file)
     # create logger
