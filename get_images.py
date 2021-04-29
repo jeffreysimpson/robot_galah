@@ -29,11 +29,11 @@ def get_hips_image(the_star):
                         'CDS/P/DSS2/color',
                         # 'CDS/P/Skymapper-color-IRG'
                         ]:
-        logger.info(f"Trying {hips_survey}")
+        logger.info("Trying %s", hips_survey)
         try:
             result = make_sky_image(geometry, hips_survey, 'jpg')
         except HTTPError:
-            logger.info("Doesn't exist? :(")
+            logger.info("No useful images from %s", hips_survey)
             continue
         except URLError as e:
             logger.error(e)
@@ -41,10 +41,10 @@ def get_hips_image(the_star):
         logger.info("Succesfully downloaded the sky image")
         base_image = Path.joinpath(tweet_content_dir, "sky_image.jpg")
         result.write_image(base_image)
-        logger.info(f"Saved image to {base_image}")
+        logger.info("Saved image to %s", base_image)
         break
 
-    logger.info(f"Adding the overlay")
+    logger.info("Adding the overlay")
     font = ImageFont.truetype(
         "/Users/jeffreysimpson/Library/Fonts/Roboto-Bold.ttf", 40)
     img_sky = Image.open(base_image)
@@ -61,5 +61,5 @@ def get_hips_image(the_star):
     draw.text((800, (1000 - 60)), "2 arcmin", (255, 255, 255), font=font)
     overlayed_image = Path.joinpath(tweet_content_dir, "sky_image_overlay.jpg")
     img_sky.save(overlayed_image)
-    logger.info(f"Saved overlayed image to {overlayed_image}")
+    logger.info("Saved overlayed image to %s", overlayed_image)
     return hips_survey

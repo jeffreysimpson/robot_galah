@@ -67,7 +67,7 @@ def plot_spectra(the_star):
     rv_correction = (
         c / ((the_star['rv_galah'] * u.km / u.s) + c)).decompose().value
 
-    fig, axes, redo_axes_list, axes_array = galah_plotting.initialize_plots(
+    fig, axes, redo_axes_list, *_ = galah_plotting.initialize_plots(
         figsize=(3, 4),
         #     things_to_plot=plot_list_base,
         specific_layout=plot_list_base,
@@ -75,11 +75,11 @@ def plot_spectra(the_star):
 
     rv_correction = (
         c / ((the_star['rv_galah'] * u.km / u.s) + c)).decompose().value
-    logger.debug(f"Applying an RV correction of {rv_correction}")
+    logger.debug("Applying an RV correction of %s", rv_correction)
 
     for *_, spec_row in df.iterrows():
         url = spec_row['access_url'] + "&RESPONSEFORMAT=fits"
-        logger.info(f"Opening {url}")
+        logger.info("Opening %s", url)
         with fits.open(url) as spec:
             wl = np.linspace(float(spec[0].header['WMIN']),
                              float(spec[0].header['WMAX']),
@@ -104,7 +104,7 @@ def plot_spectra(the_star):
         f"Normalized HERMES spectrum of\nGaia eDR3 {the_star['dr3_source_id']}")
     galah_plotting.redo_plot_lims(axes, redo_axes_list)
     spec_file = Path.joinpath(tweet_content_dir, "spectra.png")
-    logger.info(f"Saving spectrum to {spec_file}")
+    logger.info("Saving spectrum to %s", spec_file)
     fig.savefig(spec_file, bbox_inches='tight',
                 dpi=500, transparent=False)
     return 0

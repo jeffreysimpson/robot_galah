@@ -1,3 +1,4 @@
+
 import json
 import logging
 import logging.config
@@ -16,7 +17,7 @@ def get_keys(path):
 
 def media_load(filename, alt_text, api, logger):
     """Load the images and gets the media IDs for Twitter."""
-    logger.info(f"Getting media_id for {filename}")
+    logger.info("Getting media_id for %s", filename)
     try:
         with open(filename, 'rb') as file:
             media = api.media_upload(filename=filename, file=file)
@@ -27,7 +28,7 @@ def media_load(filename, alt_text, api, logger):
         logger.error(e)
         return ""
     api.create_media_metadata(media.media_id_string, alt_text)
-    logger.debug(f"The media_id for {filename} is {media.media_id_string}")
+    logger.debug("The media_id for %s is %s", filename, media.media_id_string)
     return media.media_id_string
 
 
@@ -43,7 +44,7 @@ def tweet(tweet_text, hips_survey, gaia_dr3_id):
     # create logger
     logger = logging.getLogger('do_the_tweeting')
 
-    logger.debug(f"Getting the Twitter secrets from {SECRETS_FILE}")
+    logger.debug("Getting the Twitter secrets from %s", SECRETS_FILE)
     try:
         keys = get_keys(SECRETS_FILE)
     except FileNotFoundError as e:
@@ -53,7 +54,7 @@ def tweet(tweet_text, hips_survey, gaia_dr3_id):
     alt_text_dict = {"sky_image_overlay.jpg": f"A 15 by 15 arcminute image from the {hips_survey.split('/')[2]}. Gaia eDR3 {gaia_dr3_id} is found at the centre.",
                      "stellar_params_teff.png": f"Two graphs made from GALAH survey data. The top panel is a temperature versus surface gravity, and the bottom panel is the Tinsley-Wallerstein diagram showing the metallicity versus the alpha abundance. On both, Gaia eDR3 {gaia_dr3_id} is indicated with a big red star.",
                      "stellar_params_L_Z.png": f"Two graphs made from GALAH survey data. The top panel is the z-component of the angular momentum versus the orbital energy. The bottom panel is the Toomre diagram. On both, Gaia eDR3 {gaia_dr3_id} is indicated with a big red star.",
-                     "spectra.png": f"The normalized HERMES spectrum of Gaia eDR3 {gaia_dr3_id}. HERMES acquires the spectrum of the star in four non-contiguous wavelength regions: Blue, Green, Red, and Infrared.",}
+                     "spectra.png": f"The normalized HERMES spectrum of Gaia eDR3 {gaia_dr3_id}. HERMES acquires the spectrum of the star in four non-contiguous wavelength regions: Blue, Green, Red, and Infrared."}
 
     auth = tweepy.OAuthHandler(keys['consumer_key'], keys['consumer_secret'])
     auth.set_access_token(keys['key'], keys['secret'])
@@ -64,7 +65,7 @@ def tweet(tweet_text, hips_survey, gaia_dr3_id):
                 for filename, alt_text in alt_text_dict.items()]
     if np.any([m == "" for m in media_id]):
         logger.error(
-            f"Missing a media_id values for {np.sum([m == '' for m in media_id])} images.")
+            "Missing a media_id values for %i images.", np.sum([m == '' for m in media_id]))
         return 1
     try:
         tweet_return = api.update_status(status=tweet_text, media_ids=media_id)
@@ -72,4 +73,5 @@ def tweet(tweet_text, hips_survey, gaia_dr3_id):
         logger.error(e)
         return 1
     logger.info(
-        f"Tweeted at {tweet_return.entities['urls'][0]['expanded_url']}")
+        "Tweet link: %s", tweet_return.entities['urls'][0]['expanded_url'])
+    return 0

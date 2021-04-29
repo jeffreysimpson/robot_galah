@@ -3,7 +3,6 @@
 import logging
 import logging.config
 from datetime import datetime
-from os.path import dirname, join
 from pathlib import Path
 from random import choice
 
@@ -27,10 +26,10 @@ def main():
 
     tweet_content_dir = Path.joinpath(cwd, "tweet_content/.")
     logger.debug(
-        f"Deleting the old files in {tweet_content_dir.as_posix()} if they exist")
+        "Deleting the old files in %s if they exist", tweet_content_dir.as_posix())
     for f in tweet_content_dir.iterdir():
         if f.is_file:
-            logger.debug(f"Deleting {f.name}")
+            logger.debug("Deleting %s", f.name)
             f.unlink()
 
     # from matplotlib.offsetbox import AnchoredText
@@ -55,17 +54,16 @@ def main():
     USEFUL_STAR = False
     while USEFUL_STAR is False:
         rand_idx = np.random.randint(low=0, high=len(galah_dr3))
-        logger.debug(f"Trying index {rand_idx}")
+        logger.debug("Trying index %i", rand_idx)
         the_star = galah_dr3[rand_idx]
         if ((the_star['flag_sp'] == 0) &
             (the_star['flag_fe_h'] == 0) &
                 (the_star['snr_c3_iraf'] > 30)):
             USEFUL_STAR = True
-            logger.info(f"Found a useful star: {the_star['sobject_id']}")
+            logger.info("Found a useful star: %s", the_star['sobject_id'])
 
     logger.debug("Extracting the useful information about the star")
     gaia_dr3_id = the_star['dr3_source_id']
-    star_id = the_star['star_id']
     YYMMDD = str(the_star['sobject_id'])[:6]
     d = datetime.strptime(YYMMDD, "%y%m%d").date()
     obs_date_str = d.strftime('%-d %b %Y')
@@ -79,6 +77,7 @@ def main():
     tweet_line_2 = f"We observed Gaia eDR3 {gaia_dr3_id} on the night of {obs_date_str} {survey_str[survey_name]}."
     tweet_line_3 = f"It is about {np.round(distance*10)*100:0.0f} pc from the Sun, and we estimate this star is {age:0.0f} Gyr old and {mass:0.1f} solar masses."
     tweet_text = "\n\n".join([tweet_line_1, tweet_line_2, tweet_line_3])
+    hips_survey = "////"
 
     for line in [tweet_line_1, tweet_line_2, tweet_line_3]:
         logger.info(line)

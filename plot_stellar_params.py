@@ -33,9 +33,11 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
     ]]
 
     for plot_list_base in plot_list_bases:
-        logger.info(f"Creating the {plot_list_base} plot")
+        logger.info("Creating the %s vs %s and %s vs %s plot",
+                    plot_list_base[0][0], plot_list_base[0][1],
+                    plot_list_base[1][0], plot_list_base[1][1])
         fig, axes, redo_axes_list, *_ = galah_plotting.initialize_plots(
-            figsize=(2.*1.15, 4*1.15),
+            figsize=(2. * 1.15, 4 * 1.15),
             things_to_plot=plot_list_base,
             nrows=2, ncols=1
         )
@@ -106,5 +108,6 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
             logger.error(e)
             return 1
         # fig.close()
-        logger.info(f"Saved plot to {save_file_loc}")
+        logger.info("Saved plot to %s", save_file_loc)
         plt.close(fig)
+    return 0
