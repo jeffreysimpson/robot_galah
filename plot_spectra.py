@@ -92,7 +92,7 @@ def plot_spectra(the_star):
         redo_axes_list[spec_row['band_name']].update(
             {"xticks": ticks_dict[spec_row['band_name']],
              "yticks": [],
-             "xlim": np.percentile(wl, [0, 100]) * [0.999, 1.0001],
+             "xlim": np.percentile(wl, [0, 100]) + [-3, 3],
              "ylim": [0, 1.2]
              })
 
