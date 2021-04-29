@@ -36,8 +36,8 @@ def main():
     DATA_DIR = "/Users/jeffreysimpson/ownCloud/galah_catalogues/dr3"
     DATA_FILE = "GALAH_DR3_main_allstar_ages_dynamics_bstep_v2.fits"
 
-    BIRD_WORDS = ['squawk', 'chirp', 'tweet', 'hoot',
-                  'cluck', 'screech', 'coo', 'warble', 'honk']
+    BIRD_WORDS = ['squawk', 'chirp', 'tweet', 'hoot', 'cacaw', 'quack',
+                  'cluck', 'screech', 'coo', 'warble', 'honk', 'screech']
 
     galah_dr3 = fits.open(f"{DATA_DIR}/{DATA_FILE}")[1].data
 
