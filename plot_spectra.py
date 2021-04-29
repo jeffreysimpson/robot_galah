@@ -1,15 +1,18 @@
 
+import logging
+import logging.config
+from pathlib import Path
+
 import astropy.units as u
 import galah_plotting
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from astropy.constants import c
 from astropy.io import fits
-from pyvo.dal.ssa import SSAService
-import logging
-import logging.config
-
+from matplotlib import rcParams
 from pyvo.dal.exceptions import DALFormatError
+from pyvo.dal.ssa import SSAService
 
 # URL of the SSA service
 URL = "https://datacentral.org.au/vo/ssa/query"
@@ -18,11 +21,18 @@ service = SSAService(URL)
 
 def plot_spectra(the_star):
 
-    logging.config.fileConfig('logging.conf')
+    rcParams['font.family'] = "sans-serif"
+    rcParams['font.sans-serif'] = ["Roboto"]
+    rcParams['figure.facecolor'] = 'white'
+    plt.style.use("dark_background")
+
+    cwd = Path(__file__).parent
+    tweet_content_dir = Path.joinpath(cwd, "tweet_content")
+    config_file = Path.joinpath(cwd, 'logging.conf')
+    logging.config.fileConfig(config_file)
     # create logger
     logger = logging.getLogger('plot_spectra')
 
-    star_id = the_star['star_id']
     custom = {}
     custom['TARGETNAME'] = the_star['sobject_id']
     # only retrieve the normalised spectra
@@ -57,7 +67,7 @@ def plot_spectra(the_star):
     rv_correction = (
         c / ((the_star['rv_galah'] * u.km / u.s) + c)).decompose().value
 
-    fig, axes, redo_axes_list, axes_array = galah_plotting.initialize_plots(
+    fig, axes, redo_axes_list, *_ = galah_plotting.initialize_plots(
         figsize=(3, 4),
         #     things_to_plot=plot_list_base,
         specific_layout=plot_list_base,
@@ -65,11 +75,11 @@ def plot_spectra(the_star):
 
     rv_correction = (
         c / ((the_star['rv_galah'] * u.km / u.s) + c)).decompose().value
-    logger.debug(f"Applying an RV correction of {rv_correction}")
+    logger.debug("Applying an RV correction of %s", rv_correction)
 
     for *_, spec_row in df.iterrows():
         url = spec_row['access_url'] + "&RESPONSEFORMAT=fits"
-        logger.info(f"Opening {url}")
+        logger.info("Opening %s", url)
         with fits.open(url) as spec:
             wl = np.linspace(float(spec[0].header['WMIN']),
                              float(spec[0].header['WMAX']),
@@ -82,7 +92,7 @@ def plot_spectra(the_star):
         redo_axes_list[spec_row['band_name']].update(
             {"xticks": ticks_dict[spec_row['band_name']],
              "yticks": [],
-             "xlim": np.percentile(wl, [0, 100]) * [0.999, 1.0001],
+             "xlim": np.percentile(wl, [0, 100]) + [-3, 3],
              "ylim": [0, 1.2]
              })
 
@@ -90,10 +100,11 @@ def plot_spectra(the_star):
         {"xlabel": 'Wavelength (angstroms)',
          })
 
-    axes['B'].set_title(f"Normalized HERMES spectrum of {star_id}")
+    axes['B'].set_title(
+        f"Normalized HERMES spectrum of\nGaia eDR3 {the_star['dr3_source_id']}")
     galah_plotting.redo_plot_lims(axes, redo_axes_list)
-    spec_file = "tweet_content/spectra.png"
-    logger.info(f"Saving spectrum to {spec_file}")
+    spec_file = Path.joinpath(tweet_content_dir, "spectra.png")
+    logger.info("Saving spectrum to %s", spec_file)
     fig.savefig(spec_file, bbox_inches='tight',
                 dpi=500, transparent=False)
     return 0
