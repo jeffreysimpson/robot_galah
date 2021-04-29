@@ -45,7 +45,11 @@ def tweet(tweet_text, hips_survey, star_id):
     logger = logging.getLogger('do_the_tweeting')
 
     logger.debug(f"Getting the Twitter secrets from {SECRETS_FILE}")
-    keys = get_keys(SECRETS_FILE)
+    try:
+        keys = get_keys(SECRETS_FILE)
+    except FileNotFoundError as e:
+        logger.error(e)
+        return 1
 
     alt_text_dict = {"sky_image_overlay.jpg": f"A 15 by 15 arcminute image from the {hips_survey.split('/')[2]}. {star_id} is found at the centre.",
                      "stellar_params_teff.png": f"Two graphs made from GALAH survey data. The top panel is a temperature versus surface gravity, and the bottom panel is the Tinsley-Wallerstein diagram showing the metallicity versus the alpha abundance. On both, {star_id} is indicated with a big red star.",
