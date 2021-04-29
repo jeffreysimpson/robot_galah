@@ -26,7 +26,6 @@ def plot_spectra(the_star):
     # create logger
     logger = logging.getLogger('plot_spectra')
 
-    star_id = the_star['star_id']
     custom = {}
     custom['TARGETNAME'] = the_star['sobject_id']
     # only retrieve the normalised spectra
@@ -94,7 +93,8 @@ def plot_spectra(the_star):
         {"xlabel": 'Wavelength (angstroms)',
          })
 
-    axes['B'].set_title(f"Normalized HERMES spectrum of {star_id}")
+    axes['B'].set_title(
+        f"Normalized HERMES spectrum of\nGaia eDR3 {the_star['dr3_source_id']}")
     galah_plotting.redo_plot_lims(axes, redo_axes_list)
     spec_file = Path.joinpath(tweet_content_dir, "spectra.png")
     logger.info(f"Saving spectrum to {spec_file}")

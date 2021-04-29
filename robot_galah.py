@@ -86,7 +86,7 @@ def main():
 
     logger.info("Creating the tweet text:")
     tweet_line_1 = f"{choice(BIRD_WORDS).upper()}!"
-    tweet_line_2 = f"We observed {star_id} on the night of {obs_date_str} {survey_str[survey_name]}."
+    tweet_line_2 = f"We observed Gaia eDR3 {gaia_dr3_id} on the night of {obs_date_str} {survey_str[survey_name]}."
     tweet_line_3 = f"It is about {np.round(distance*10)*100:0.0f} pc from the Sun, and we estimate this star is {age:0.0f} Gyr old and {mass:0.1f} solar masses."
     tweet_text = "\n\n".join([tweet_line_1, tweet_line_2, tweet_line_3])
 
@@ -103,7 +103,7 @@ def main():
     if plot_spectra(the_star) == 1:
         logger.error("Unable to download the spectra. Quitting!")
         return 1
-    if tweet(tweet_text, hips_survey, star_id) == 1:
+    if tweet(tweet_text, hips_survey, gaia_dr3_id) == 1:
         logger.error("Did not tweet. Quitting!")
 
 

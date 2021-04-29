@@ -24,7 +24,6 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
     # create logger
     logger = logging.getLogger('plot_stellar_params')
 
-    star_id = the_star['star_id']
     plot_list_bases = [[
         ['teff', 'logg'],
         ['fe_h', 'alpha_fe']
@@ -35,8 +34,7 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
 
     for plot_list_base in plot_list_bases:
         logger.info(f"Creating the {plot_list_base} plot")
-        fig, axes, redo_axes_list, axes_array = galah_plotting.initialize_plots(
-            figsize=(2., 4),
+        fig, axes, redo_axes_list, *_ = galah_plotting.initialize_plots(
             things_to_plot=plot_list_base,
             nrows=2, ncols=1
         )
@@ -79,7 +77,8 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
                  "xlim": [-2.7, 0.7],
                  "ylim": [-1.2, 1.5]
                  })
-            axes['teff__logg'].set_title(f"Stellar parameters")
+            axes['teff__logg'].set_title(
+                f"Stellar parameters of\nGaia eDR3 {the_star['dr3_source_id']}")
         if plot_list_base[0][0] == "L_Z":
             redo_axes_list['L_Z__Energy'].update(
                 {"xticks": np.arange(-4, 5, 2),
@@ -93,7 +92,8 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
                  "xlim": [-500, 100],
                  "ylim": [0, 500],
                  })
-            axes['L_Z__Energy'].set_title("Orbital properties")
+            axes['L_Z__Energy'].set_title(
+                f"Orbital properties of\nGaia eDR3 {the_star['dr3_source_id']}")
         galah_plotting.redo_plot_lims(axes, redo_axes_list)
         # plt.show()
         save_file_loc = Path.joinpath(

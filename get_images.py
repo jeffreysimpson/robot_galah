@@ -17,7 +17,7 @@ def get_hips_image(the_star):
     # create logger
     logger = logging.getLogger('get_images')
 
-    star_id = the_star['star_id']
+    gaia_dr3_id = the_star['dr3_source_id']
 
     geometry = WCSGeometry.create(
         skydir=SkyCoord(the_star['RA'], the_star['Dec'], unit='deg'),
@@ -55,7 +55,7 @@ def get_hips_image(the_star):
                (500, (500 + 20))], fill='white', width=5)
     draw.line([(815, (1000 - 70)),
                (815 + 1000 / 15 * 2, (1000 - 70))], fill='white', width=5)
-    draw.text((30, 10), f"{star_id}", (255, 255, 255), font=font)
+    draw.text((30, 10), f"Gaia eDR3 {gaia_dr3_id}", (255, 255, 255), font=font)
     draw.text((30, (1000 - 60)),
               f"{hips_survey.split('/')[2]}", (255, 255, 255), font=font)
     draw.text((800, (1000 - 60)), "2 arcmin", (255, 255, 255), font=font)
