@@ -1,11 +1,10 @@
 import json
-
-import tweepy
-
 import logging
 import logging.config
-import numpy as np
+from pathlib import Path
 
+import numpy as np
+import tweepy
 from tweepy.error import TweepError
 
 

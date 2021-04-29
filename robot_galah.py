@@ -10,15 +10,10 @@ from random import choice
 import numpy as np
 from astropy.io import fits
 
-from random import choice
-from plot_stellar_params import plot_stellar_params
+from do_the_tweeting import tweet
 from get_images import get_hips_image
 from plot_spectra import plot_spectra
-from do_the_tweeting import tweet
-
-
-import logging
-import logging.config
+from plot_stellar_params import plot_stellar_params
 
 
 def main():
@@ -42,12 +37,8 @@ def main():
     DATA_DIR = "/Users/jeffreysimpson/ownCloud/galah_catalogues/dr3"
     DATA_FILE = "GALAH_DR3_main_allstar_ages_dynamics_bstep_v2.fits"
 
-
-
     BIRD_WORDS = ['squawk', 'chirp', 'tweet', 'hoot',
                   'cluck', 'screech', 'coo', 'warble', 'honk']
-
-
 
     galah_dr3 = fits.open(f"{DATA_DIR}/{DATA_FILE}")[1].data
 
@@ -82,7 +73,6 @@ def main():
     age = the_star['age_bstep']
     mass = the_star['m_act_bstep']
     distance = the_star['distance_bstep']
-
 
     logger.info("Creating the tweet text:")
     tweet_line_1 = f"{choice(BIRD_WORDS).upper()}!"

@@ -33,12 +33,12 @@ def get_hips_image(the_star):
         try:
             result = make_sky_image(geometry, hips_survey, 'jpg')
         except HTTPError:
-            logger.info(f"Doesn't exist? :(")
+            logger.info("Doesn't exist? :(")
             continue
         except URLError as e:
             logger.error(e)
             return 1
-        logger.info(f"Succesfully downloaded the sky image")
+        logger.info("Succesfully downloaded the sky image")
         base_image = Path.joinpath(tweet_content_dir, "sky_image.jpg")
         result.write_image(base_image)
         logger.info(f"Saved image to {base_image}")

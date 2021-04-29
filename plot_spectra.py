@@ -2,15 +2,17 @@
 import logging
 import logging.config
 from pathlib import Path
+
 import astropy.units as u
 import galah_plotting
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from astropy.constants import c
 from astropy.io import fits
-from pyvo.dal.ssa import SSAService
-
+from matplotlib import rcParams
 from pyvo.dal.exceptions import DALFormatError
+from pyvo.dal.ssa import SSAService
 
 # URL of the SSA service
 URL = "https://datacentral.org.au/vo/ssa/query"
@@ -18,6 +20,11 @@ service = SSAService(URL)
 
 
 def plot_spectra(the_star):
+
+    rcParams['font.family'] = "sans-serif"
+    rcParams['font.sans-serif'] = ["Roboto"]
+    rcParams['figure.facecolor'] = 'white'
+    plt.style.use("dark_background")
 
     cwd = Path.cwd()
     tweet_content_dir = Path.joinpath(cwd, "tweet_content")

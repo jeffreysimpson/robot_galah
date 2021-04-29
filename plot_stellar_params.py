@@ -35,6 +35,7 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
     for plot_list_base in plot_list_bases:
         logger.info(f"Creating the {plot_list_base} plot")
         fig, axes, redo_axes_list, *_ = galah_plotting.initialize_plots(
+            figsize=(2.*1.15, 4*1.15),
             things_to_plot=plot_list_base,
             nrows=2, ncols=1
         )
@@ -47,7 +48,7 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
         ]
 
         for stars_to_highlight in [[], the_star_highlight]:
-            for_cbar = galah_plotting.plot_base_all(
+            galah_plotting.plot_base_all(
                 plot_list_base,
                 stars_to_highlight,
                 basest_idx_galah,
@@ -106,3 +107,4 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
             return 1
         # fig.close()
         logger.info(f"Saved plot to {save_file_loc}")
+        plt.close(fig)
