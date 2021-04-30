@@ -83,14 +83,14 @@ def main():
         logger.info(line)
 
     if plot_stellar_params(galah_dr3, the_star, basest_idx_galah) == 1:
-        logger.error("Did not complete the plots properly. Quitting!")
+        logger.error("Something went wrong with the plots. Quitting!")
         return 1
     hips_survey = get_hips_image(the_star)
     if hips_survey == 1:
-        logger.error("Did not download a sky image. Quitting!")
+        logger.error("Something went wrong with the sky image. Quitting!")
         return 1
     if plot_spectra(the_star) == 1:
-        logger.error("Unable to download the spectra. Quitting!")
+        logger.error("Something went wrong with the spectra. Quitting!")
         return 1
     if tweet(tweet_text, hips_survey, gaia_dr3_id) == 1:
         logger.error("Did not tweet. Quitting!")
