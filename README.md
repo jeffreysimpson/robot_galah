@@ -8,8 +8,8 @@ Here's what I have used to run it:
 * [Tweepy](http://www.tweepy.org/)
 * [pyvo](https://pyvo.readthedocs.io/en/latest/)
 * [astropy](https://www.astropy.org)
-* [hips](https://hips.readthedocs.io/en/latest/)
-* matplotlib, numpy, pandas, Pillow
+* [mocpy](https://cds-astro.github.io/mocpy/)
+* matplotlib, numpy, pandas, Pillow, requests
 * galah_plotting: this is a personal package I have for some convenience functions to plot GALAH data.
 
 Getting the spectra

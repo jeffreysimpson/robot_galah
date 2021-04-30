@@ -1,12 +1,11 @@
 import logging
 import logging.config
-# from os.path import dirname, join
 from pathlib import Path
 
 import galah_plotting
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import rcParams  # font_manager,
+from matplotlib import rcParams
 from matplotlib.colors import LogNorm
 
 
