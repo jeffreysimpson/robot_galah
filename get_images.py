@@ -18,7 +18,9 @@ def within_footprint(survey_url, the_star):
 
 
 def download_image(survey_url, the_star, logger, base_image):
-    """Downloads the HiPS image."""
+    """Downloads the HiPS image.
+
+    This research made use of hips2fits, (https://alasky.u-strasbg.fr/hips-image-services/hips2fits) a service provided by CDS."""
     width = 1000
     height = 1000
     fov = 0.25
