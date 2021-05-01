@@ -8,6 +8,7 @@ import requests
 from astropy import units as u
 from mocpy import MOC
 from PIL import Image, ImageDraw, ImageFont
+import sys
 
 
 def within_footprint(survey_url, the_star):
@@ -42,7 +43,7 @@ def download_image(survey_url, the_star, logger, base_image):
         return 1
 
 
-def get_hips_image(the_star):
+def get_hips_image(the_star, secrets_dict):
     """Main function to get a sky image for the given star."""
     cwd = Path(__file__).parent
     tweet_content_dir = Path.joinpath(cwd, "tweet_content")
@@ -68,8 +69,10 @@ def get_hips_image(the_star):
                 break
 
     logger.info("Adding the overlay")
-    font = ImageFont.truetype(
-        "/Users/jeffreysimpson/Library/Fonts/Roboto-Bold.ttf", 40)
+    # Necessary to force to a string here for the ImageFont bit.
+    font = ImageFont.truetype(str(Path.joinpath(Path(secrets_dict["font_dir"]),
+                                                "Roboto-Bold.ttf")),
+                              40)
     try:
         img_sky = Image.open(base_image)
     except FileNotFoundError as e:

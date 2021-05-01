@@ -13,8 +13,21 @@ from do_the_tweeting import tweet
 from get_images import get_hips_image
 from plot_spectra import plot_spectra
 from plot_stellar_params import plot_stellar_params
+import json
+def get_keys(secrets_path):
+    """Loads the JSON file of secrets."""
+    with open(secrets_path) as f:
+        return json.load(f)
 
 
+def get_secrets(cwd, logger):
+    SECRETS_FILE = Path.joinpath(cwd, '.secret/twitter_secrets.json')
+    logger.debug("Getting the Twitter secrets from %s", SECRETS_FILE)
+    try:
+        keys = get_keys(SECRETS_FILE)
+        return keys
+    except FileNotFoundError as e:
+        logger.error(e)
 def main():
     cwd = Path(__file__).parent
     config_file = Path.joinpath(cwd, 'logging.conf')
@@ -32,8 +45,9 @@ def main():
             logger.debug("Deleting %s", f.name)
             f.unlink()
 
+    secrets_dict = get_secrets(cwd, logger)
     # from matplotlib.offsetbox import AnchoredText
-    DATA_DIR = "/Users/jeffreysimpson/ownCloud/galah_catalogues/dr3"
+    DATA_DIR = secrets_dict["DATA_DIR"]
     DATA_FILE = "GALAH_DR3_main_allstar_ages_dynamics_bstep_v2.fits"
 
     BIRD_WORDS = ['squawk', 'chirp', 'tweet', 'hoot', 'cacaw', 'quack',
@@ -86,6 +100,7 @@ def main():
         logger.error("Something went wrong with the plots. Quitting!")
         return 1
     hips_survey = get_hips_image(the_star)
+    hips_survey = get_hips_image(the_star, secrets_dict)
     if hips_survey == 1:
         logger.error("Something went wrong with the sky image. Quitting!")
         return 1
@@ -95,6 +110,7 @@ def main():
     if tweet(tweet_text, hips_survey, gaia_dr3_id) == 1:
         logger.error("Did not tweet. Quitting!")
 
+    if tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict) == 0:
 
 if __name__ == "__main__":
     main()
