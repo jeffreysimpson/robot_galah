@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import rcParams
 from matplotlib.colors import LogNorm
+import sys
 
 
 def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
@@ -17,6 +18,7 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
     plt.style.use("dark_background")
 
     cwd = Path(__file__).parent
+
     tweet_content_dir = Path.joinpath(cwd, "tweet_content")
     config_file = Path.joinpath(cwd, 'logging.conf')
     logging.config.fileConfig(config_file)
@@ -105,7 +107,8 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
                         dpi=500, transparent=False)
         except TypeError as e:
             logger.error(e)
-            return 1
+            logger.error("Did make stellar parameters plot. Quitting.")
+            sys.exit("Did make stellar parameters plot. Quitting.")
         # fig.close()
         logger.info("Saved plot to %s", save_file_loc)
         plt.close(fig)

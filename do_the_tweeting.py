@@ -7,8 +7,7 @@ from pathlib import Path
 import numpy as np
 import tweepy
 from tweepy.error import TweepError
-
-
+import sys
 
 
 def media_load(filename, alt_text, api, logger):
@@ -19,10 +18,12 @@ def media_load(filename, alt_text, api, logger):
             media = api.media_upload(filename=filename, file=file)
     except FileNotFoundError as e:
         logger.error(e)
-        return ""
+        logger.error("Image to tweet does not exist. Quitting.")
+        sys.exit("Image to tweet does not exist. Quitting.")
     except TweepError as e:
         logger.error(e)
-        return ""
+        logger.error("Twitter didn't like the image? Quitting.")
+        sys.exit("Twitter didn't like the image? Quitting.")
     api.create_media_metadata(media.media_id_string, alt_text)
     logger.debug("The media_id for %s is %s", filename, media.media_id_string)
     return media.media_id_string
@@ -52,15 +53,18 @@ def tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict):
 
     media_id = [media_load(Path.joinpath(tweet_content_dir, filename), alt_text, api, logger)
                 for filename, alt_text in alt_text_dict.items()]
-    if np.any([m == "" for m in media_id]):
-        logger.error(
-            "Missing a media_id values for %i images.", np.sum([m == '' for m in media_id]))
-        return 1
+    # if np.any([m == "" for m in media_id]):
+    #     logger.error(
+    #         "Missing a media_id values for %i images.", np.sum([m == '' for m in media_id]))
+    #     logger.error("Image to tweet does not exist. Quitting.")
+    #     sys.exit("Image to tweet does not exist. Quitting.")
+    #     return 1
     try:
         tweet_return = api.update_status(status=tweet_text, media_ids=media_id)
     except TweepError as e:
         logger.error(e)
-        return 1
+        logger.error("Did not sucessfully tweet! Quitting!")
+        sys.exit("Did not sucessfully tweet! Quitting!")
     logger.info(
         "Tweet link: %s", tweet_return.entities['urls'][0]['expanded_url'])
     return 0

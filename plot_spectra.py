@@ -1,6 +1,7 @@
 
 import logging
 import logging.config
+import sys
 from pathlib import Path
 
 import astropy.units as u
@@ -11,7 +12,7 @@ import pandas as pd
 from astropy.constants import c
 from astropy.io import fits
 from matplotlib import rcParams
-from pyvo.dal.exceptions import DALFormatError
+from pyvo.dal.exceptions import DALFormatError, DALServiceError
 from pyvo.dal.ssa import SSAService
 
 # URL of the SSA service
@@ -41,9 +42,10 @@ def plot_spectra(the_star):
     logger.info("Grabbing the spectra files")
     try:
         results = service.search(**custom)
-    except DALFormatError as e:
+    except(DALServiceError, DALFormatError) as e:
         logger.error(e)
-        return 1
+        logger.error("Did not get the list of spectra. Quitting.")
+        sys.exit("Did not get the list of spectra. Quitting.")
     indiv_results = []
     indiv_results.append(results.votable.get_first_table().to_table(
         use_names_over_ids=True).to_pandas())

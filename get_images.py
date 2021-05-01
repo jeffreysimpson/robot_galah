@@ -9,13 +9,20 @@ from astropy import units as u
 from mocpy import MOC
 from PIL import Image, ImageDraw, ImageFont
 import sys
+from urllib.error import HTTPError
 
 
-def within_footprint(survey_url, the_star):
+def within_footprint(survey_url, the_star, logger):
     """Checks if the star is within the footprint of a given survey."""
-    survey_moc = MOC.from_fits(f"{survey_url}/Moc.fits")
-    return survey_moc.contains(the_star['ra'] * u.degree,
-                               the_star['dec'] * u.degree)[0]
+    try:
+        moc_url = f"{survey_url}/Moc.fits"
+        survey_moc = MOC.from_fits(moc_url)
+        return survey_moc.contains(the_star['ra'] * u.degree,
+                                   the_star['dec'] * u.degree)[0]
+    except HTTPError as e:
+        logger.error(e)
+        logger.error("Did not get the MOC file from %s. Quitting.", moc_url)
+        sys.exit("Did not get the MOC file. Quitting.")
 
 
 def download_image(survey_url, the_star, logger, base_image):
@@ -39,8 +46,8 @@ def download_image(survey_url, the_star, logger, base_image):
         return 0
     else:
         logger.error("BAD HTTP response: %s", response.status_code)
-        del response
-        return 1
+        logger.error("Did not get the sky image. Quitting.")
+        sys.exit("Did not get the sky image. Quitting.")
 
 
 def get_hips_image(the_star, secrets_dict):
@@ -56,19 +63,21 @@ def get_hips_image(the_star, secrets_dict):
 
     ohips = [['Pan-STARRS', 'http://alasky.u-strasbg.fr/Pan-STARRS/DR1/color-z-zg-g'],
              ['DECaLS',  'http://alasky.u-strasbg.fr/DECaLS/DR5/color'],
-             ['DSS2',  "http://alasky.u-strasbg.fr/DSS/DSSColor"]]
+             ['DSS2',  "http://alasky.u-strasbg.fr/DSS/DSSColor"]
+             ]
 
     base_image = Path.joinpath(tweet_content_dir, "sky_image.jpg")
 
     for survey, survey_url in ohips:
         logger.info("Trying %s", survey)
-        if within_footprint(survey_url, the_star):
-            logger.info("Target is within footprint")
+        if within_footprint(survey_url, the_star, logger):
+            logger.info("Target is within footprint of %s", survey)
             res = download_image(survey_url, the_star, logger, base_image)
             if res == 0:
                 break
+        else:
+            logger.info("Target is *not* within footprint of %s", survey)
 
-    logger.info("Adding the overlay")
     # Necessary to force to a string here for the ImageFont bit.
     font = ImageFont.truetype(str(Path.joinpath(Path(secrets_dict["font_dir"]),
                                                 "Roboto-Bold.ttf")),
@@ -77,7 +86,10 @@ def get_hips_image(the_star, secrets_dict):
         img_sky = Image.open(base_image)
     except FileNotFoundError as e:
         logger.error(e)
+        logger.error("Could not load the sky image. Quitting.")
+        sys.exit("Could not load the sky image. Quitting.")
         return 1
+    logger.info("Adding the overlay")
     draw = ImageDraw.Draw(img_sky, "RGBA")
     draw.line([((500 - 80), 500),
                ((500 - 20), 500)], fill='white', width=5)

@@ -14,6 +14,9 @@ from get_images import get_hips_image
 from plot_spectra import plot_spectra
 from plot_stellar_params import plot_stellar_params
 import json
+import sys
+
+
 def get_keys(secrets_path):
     """Loads the JSON file of secrets."""
     with open(secrets_path) as f:
@@ -28,6 +31,10 @@ def get_secrets(cwd, logger):
         return keys
     except FileNotFoundError as e:
         logger.error(e)
+        logger.error("Did not load secrets file. Quitting.")
+        sys.exit("Did not load secrets file. Quitting.")
+
+
 def main():
     cwd = Path(__file__).parent
     config_file = Path.joinpath(cwd, 'logging.conf')
@@ -91,26 +98,13 @@ def main():
     tweet_line_2 = f"We observed Gaia eDR3 {gaia_dr3_id} on the night of {obs_date_str} {survey_str[survey_name]}."
     tweet_line_3 = f"It is about {np.round(distance*10)*100:0.0f} pc from the Sun, and we estimate this star is {age:0.0f} Gyr old and {mass:0.1f} solar masses."
     tweet_text = "\n\n".join([tweet_line_1, tweet_line_2, tweet_line_3])
-    hips_survey = "////"
 
     for line in [tweet_line_1, tweet_line_2, tweet_line_3]:
         logger.info(line)
-
-    if plot_stellar_params(galah_dr3, the_star, basest_idx_galah) == 1:
-        logger.error("Something went wrong with the plots. Quitting!")
-        return 1
-    hips_survey = get_hips_image(the_star)
+    plot_stellar_params(galah_dr3, the_star, basest_idx_galah)
     hips_survey = get_hips_image(the_star, secrets_dict)
-    if hips_survey == 1:
-        logger.error("Something went wrong with the sky image. Quitting!")
-        return 1
-    if plot_spectra(the_star) == 1:
-        logger.error("Something went wrong with the spectra. Quitting!")
-        return 1
-    if tweet(tweet_text, hips_survey, gaia_dr3_id) == 1:
-        logger.error("Did not tweet. Quitting!")
-
-    if tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict) == 0:
+    plot_spectra(the_star)
+    tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict)
 
 if __name__ == "__main__":
     main()
