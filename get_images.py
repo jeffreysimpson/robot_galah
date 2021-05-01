@@ -1,15 +1,15 @@
 import logging
 import logging.config
 import shutil
+import sys
 from pathlib import Path
+from urllib.error import HTTPError
 from urllib.parse import quote
 
 import requests
 from astropy import units as u
 from mocpy import MOC
 from PIL import Image, ImageDraw, ImageFont
-import sys
-from urllib.error import HTTPError
 
 
 def within_footprint(survey_url, the_star, logger):

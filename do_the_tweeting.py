@@ -2,12 +2,12 @@
 
 import logging
 import logging.config
+import sys
 from pathlib import Path
 
 import numpy as np
 import tweepy
 from tweepy.error import TweepError
-import sys
 
 
 def media_load(filename, alt_text, api, logger):

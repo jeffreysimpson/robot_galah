@@ -1,7 +1,9 @@
 """Bot for GALAH."""
 
+import json
 import logging
 import logging.config
+import sys
 from datetime import datetime
 from pathlib import Path
 from random import choice
@@ -13,8 +15,6 @@ from do_the_tweeting import tweet
 from get_images import get_hips_image
 from plot_spectra import plot_spectra
 from plot_stellar_params import plot_stellar_params
-import json
-import sys
 
 
 def get_keys(secrets_path):

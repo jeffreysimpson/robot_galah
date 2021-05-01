@@ -1,5 +1,6 @@
 import logging
 import logging.config
+import sys
 from pathlib import Path
 
 import galah_plotting
@@ -7,7 +8,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import rcParams
 from matplotlib.colors import LogNorm
-import sys
 
 
 def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
