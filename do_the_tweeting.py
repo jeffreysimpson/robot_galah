@@ -1,5 +1,5 @@
 
-import json
+
 import logging
 import logging.config
 from pathlib import Path
@@ -9,10 +9,6 @@ import tweepy
 from tweepy.error import TweepError
 
 
-def get_keys(path):
-    """Loads the JSON file of secrets."""
-    with open(path) as f:
-        return json.load(f)
 
 
 def media_load(filename, alt_text, api, logger):
@@ -32,32 +28,25 @@ def media_load(filename, alt_text, api, logger):
     return media.media_id_string
 
 
-def tweet(tweet_text, hips_survey, gaia_dr3_id):
+def tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict):
 
     cwd = Path(__file__).parent
 
     tweet_content_dir = Path.joinpath(cwd, "tweet_content")
     config_file = Path.joinpath(cwd, 'logging.conf')
-    SECRETS_FILE = Path.joinpath(cwd, '.secret/twitter_secrets.json')
 
     logging.config.fileConfig(config_file)
     # create logger
     logger = logging.getLogger('do_the_tweeting')
-
-    logger.debug("Getting the Twitter secrets from %s", SECRETS_FILE)
-    try:
-        keys = get_keys(SECRETS_FILE)
-    except FileNotFoundError as e:
-        logger.error(e)
-        return 1
 
     alt_text_dict = {"sky_image_overlay.jpg": f"A 15 by 15 arcminute image from the {hips_survey}. Gaia eDR3 {gaia_dr3_id} is found at the centre.",
                      "stellar_params_teff.png": f"Two graphs made from GALAH survey data. The top panel is a temperature versus surface gravity, and the bottom panel is the Tinsley-Wallerstein diagram showing the metallicity versus the alpha abundance. On both, Gaia eDR3 {gaia_dr3_id} is indicated with a big red star.",
                      "stellar_params_L_Z.png": f"Two graphs made from GALAH survey data. The top panel is the z-component of the angular momentum versus the orbital energy. The bottom panel is the Toomre diagram. On both, Gaia eDR3 {gaia_dr3_id} is indicated with a big red star.",
                      "spectra.png": f"The normalized HERMES spectrum of Gaia eDR3 {gaia_dr3_id}. HERMES acquires the spectrum of the star in four non-contiguous wavelength regions: Blue, Green, Red, and Infrared."}
 
-    auth = tweepy.OAuthHandler(keys['consumer_key'], keys['consumer_secret'])
-    auth.set_access_token(keys['key'], keys['secret'])
+    auth = tweepy.OAuthHandler(
+        secrets_dict['consumer_key'], secrets_dict['consumer_secret'])
+    auth.set_access_token(secrets_dict['key'], secrets_dict['secret'])
 
     api = tweepy.API(auth)
 
