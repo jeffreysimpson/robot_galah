@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import rcParams
 from matplotlib.colors import LogNorm
+from matplotlib.offsetbox import AnchoredText
 
 
 def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
@@ -82,7 +83,14 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
                  "ylim": [-1.2, 1.5]
                  })
             axes['teff__logg'].set_title(
-                f"Stellar parameters of\nGaia eDR3 {the_star['dr3_source_id']}")
+                f"GALAH DR3 stellar parameters of\nGaia eDR3 {the_star['dr3_source_id']}")
+            if the_star['flag_alpha_fe'] != 0:
+#                 axes['fe_h__alpha_fe'].axvline(the_star['fe_h'], c='C3', lw=2, alpha=0.5)
+                anchored_text = AnchoredText("[α/Fe] not measured for this star.",
+                                             loc='lower left',
+                                             frameon=False, pad=0,
+                                             prop=dict(color="C3"))
+                axes['fe_h__alpha_fe'].add_artist(anchored_text)
         if plot_list_base[0][0] == "L_Z":
             redo_axes_list['L_Z__Energy'].update(
                 {"xticks": np.arange(-4, 5, 2),
@@ -97,7 +105,7 @@ def plot_stellar_params(galah_dr3, the_star, basest_idx_galah):
                  "ylim": [0, 500],
                  })
             axes['L_Z__Energy'].set_title(
-                f"Orbital properties of\nGaia eDR3 {the_star['dr3_source_id']}")
+                f"GALAH DR3 orbital properties of\nGaia eDR3 {the_star['dr3_source_id']}")
         galah_plotting.redo_plot_lims(axes, redo_axes_list)
         # plt.show()
         save_file_loc = Path.joinpath(
