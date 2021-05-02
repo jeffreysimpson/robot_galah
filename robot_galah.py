@@ -1,5 +1,6 @@
 """Bot for GALAH."""
 
+import argparse
 import json
 import logging
 import logging.config
@@ -41,8 +42,23 @@ def main():
     logging.config.fileConfig(config_file)
     # create logger
     logger = logging.getLogger('robot_galah')
-
     logger.info("STARTING")
+
+    parser = argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--sobject_id",
+                       help="Tweet a specific sobject_id.",
+                       type=int)
+    group.add_argument("--dr3_source_id",
+                       help="Tweet a specific dr3_source_id.",
+                       type=int)
+    parser.add_argument("--dry_run",
+                        help="Do everything but tweet.",
+                        action="store_true")
+    args = parser.parse_args()
+    sobject_id_arg = args.sobject_id
+    DRY_RUN = args.dry_run
+    dr3_source_id_arg = args.dr3_source_id
 
     tweet_content_dir = Path.joinpath(cwd, "tweet_content/.")
     logger.debug(
@@ -72,16 +88,33 @@ def main():
                   "tess_hermes": "during the TESS-HERMES survey",
                   "other": "during a special observing programme", }
 
-    USEFUL_STAR = False
-    while USEFUL_STAR is False:
-        rand_idx = np.random.randint(low=0, high=len(galah_dr3))
-        logger.debug("Trying index %i", rand_idx)
-        the_star = galah_dr3[rand_idx]
-        if ((the_star['flag_sp'] == 0) &
-            (the_star['flag_fe_h'] == 0) &
-                (the_star['snr_c3_iraf'] > 30)):
-            USEFUL_STAR = True
-            logger.info("Found a useful star: %s", the_star['sobject_id'])
+    if (sobject_id_arg is not None):
+        logger.info("Told to do a specific star: sobject_id=%s",
+                    sobject_id_arg)
+        star_idx = galah_dr3['sobject_id'] == sobject_id_arg
+        if not np.any(star_idx):
+            logger.error("Not a valid sobject_id. Quitting.")
+            sys.exit("Not a valid sobject_id. Quitting.")
+        the_star = galah_dr3[star_idx][0]
+    elif (dr3_source_id_arg is not None):
+        logger.info("Told to do a specific star: dr3_source_id=%s",
+                    dr3_source_id_arg)
+        star_idx = galah_dr3['dr3_source_id'] == dr3_source_id_arg
+        if not np.any(star_idx):
+            logger.error("Not a valid dr3_source_id. Quitting.")
+            sys.exit("Not a valid dr3_source_id. Quitting.")
+        the_star = galah_dr3[star_idx][0]
+    else:
+        USEFUL_STAR = False
+        while USEFUL_STAR is False:
+            rand_idx = np.random.randint(low=0, high=len(galah_dr3))
+            logger.debug("Trying index %i", rand_idx)
+            the_star = galah_dr3[rand_idx]
+            if ((the_star['flag_sp'] == 0) &
+                (the_star['flag_fe_h'] == 0) &
+                    (the_star['snr_c3_iraf'] > 30)):
+                USEFUL_STAR = True
+                logger.info("Found a useful star: %s", the_star['sobject_id'])
 
     logger.debug("Extracting the useful information about the star")
     gaia_dr3_id = the_star['dr3_source_id']
@@ -104,7 +137,7 @@ def main():
     plot_stellar_params(galah_dr3, the_star, basest_idx_galah)
     hips_survey = get_hips_image(the_star, secrets_dict)
     plot_spectra(the_star)
-    tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict)
+    tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict, DRY_RUN)
 
 if __name__ == "__main__":
     main()

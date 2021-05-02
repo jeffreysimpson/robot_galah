@@ -5,7 +5,6 @@ import logging.config
 import sys
 from pathlib import Path
 
-import numpy as np
 import tweepy
 from tweepy.error import TweepError
 
@@ -29,7 +28,7 @@ def media_load(filename, alt_text, api, logger):
     return media.media_id_string
 
 
-def tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict):
+def tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict, DRY_RUN=False):
 
     cwd = Path(__file__).parent
 
@@ -53,18 +52,16 @@ def tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict):
 
     media_id = [media_load(Path.joinpath(tweet_content_dir, filename), alt_text, api, logger)
                 for filename, alt_text in alt_text_dict.items()]
-    # if np.any([m == "" for m in media_id]):
-    #     logger.error(
-    #         "Missing a media_id values for %i images.", np.sum([m == '' for m in media_id]))
-    #     logger.error("Image to tweet does not exist. Quitting.")
-    #     sys.exit("Image to tweet does not exist. Quitting.")
-    #     return 1
     try:
-        tweet_return = api.update_status(status=tweet_text, media_ids=media_id)
+        if not DRY_RUN:
+            tweet_return = api.update_status(status=tweet_text,
+                                             media_ids=media_id)
+            logger.info("Tweet link: %s",
+                        tweet_return.entities['urls'][0]['expanded_url'])
+        else:
+            logger.info("Only a dry run, so not tweeting.")
+        sys.exit()
     except TweepError as e:
         logger.error(e)
         logger.error("Did not sucessfully tweet! Quitting!")
         sys.exit("Did not sucessfully tweet! Quitting!")
-    logger.info(
-        "Tweet link: %s", tweet_return.entities['urls'][0]['expanded_url'])
-    return 0
