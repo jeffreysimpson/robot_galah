@@ -14,6 +14,12 @@ from PIL import Image, ImageDraw, ImageFont
 
 def within_footprint(survey_url, the_star, logger):
     """Checks if the star is within the footprint of a given survey."""
+
+    # PanSTARRS-1 gets a little hairy below -29.5 degrees but still returns images.
+    # There are also places of no images (see Gaia eDR3 5463018973958284928)
+    # but the MOC thinks there are images, but actually you get gibberish.
+    if ('Pan-STARRS' in survey_url) and the_star['dec'] < 29.5:
+        return False
     try:
         moc_url = f"{survey_url}/Moc.fits"
         survey_moc = MOC.from_fits(moc_url)
