@@ -18,7 +18,7 @@ def within_footprint(survey_url, the_star, logger):
     # PanSTARRS-1 gets a little hairy below -29.5 degrees but still returns images.
     # There are also places of no images (see Gaia eDR3 5463018973958284928)
     # but the MOC thinks there are images, but actually you get gibberish.
-    if ('Pan-STARRS' in survey_url) and the_star['dec'] < 29.5:
+    if ("Pan-STARRS" in survey_url) and the_star['dec'] < 29.5:
         return False
     try:
         moc_url = f"{survey_url}/Moc.fits"
@@ -34,7 +34,9 @@ def within_footprint(survey_url, the_star, logger):
 def download_image(survey_url, the_star, logger, base_image):
     """Downloads the HiPS image.
 
-    This research made use of hips2fits, (https://alasky.u-strasbg.fr/hips-image-services/hips2fits) a service provided by CDS."""
+    This research made use of hips2fits,
+    (https://alasky.u-strasbg.fr/hips-image-services/hips2fits)
+    a service provided by CDS."""
     width = 1000
     height = 1000
     fov = 0.25
@@ -49,7 +51,6 @@ def download_image(survey_url, the_star, logger, base_image):
             shutil.copyfileobj(response.raw, out_file)
             logger.info("Saved the image to %s", base_image)
         del response
-        return 0
     else:
         logger.error("BAD HTTP response: %s", response.status_code)
         logger.error("Did not get the sky image. Quitting.")
@@ -67,7 +68,7 @@ def get_hips_image(the_star, secrets_dict):
 
     gaia_dr3_id = the_star['dr3_source_id']
 
-    ohips = [['Pan-STARRS', 'http://alasky.u-strasbg.fr/Pan-STARRS/DR1/color-z-zg-g'],
+    ohips = [['PanSTARRS-1', 'http://alasky.u-strasbg.fr/Pan-STARRS/DR1/color-z-zg-g'],
              ['DECaLS',  'http://alasky.u-strasbg.fr/DECaLS/DR5/color'],
              ['DSS2',  "http://alasky.u-strasbg.fr/DSS/DSSColor"]
              ]
@@ -77,9 +78,10 @@ def get_hips_image(the_star, secrets_dict):
     for survey, survey_url in ohips:
         logger.info("Trying %s", survey)
         if within_footprint(survey_url, the_star, logger):
+
             logger.info("Target is within footprint of %s", survey)
-            res = download_image(survey_url, the_star, logger, base_image)
-            if res == 0:
+            download_image(survey_url, the_star, logger, base_image)
+            if base_image.is_file():
                 break
         else:
             logger.info("Target is *not* within footprint of %s", survey)
@@ -94,7 +96,6 @@ def get_hips_image(the_star, secrets_dict):
         logger.error(e)
         logger.error("Could not load the sky image. Quitting.")
         sys.exit("Could not load the sky image. Quitting.")
-        return 1
     logger.info("Adding the overlay")
     draw = ImageDraw.Draw(img_sky, "RGBA")
     draw.line([((500 - 80), 500),

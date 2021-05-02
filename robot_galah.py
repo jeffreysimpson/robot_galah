@@ -115,8 +115,8 @@ def main():
                     (the_star['snr_c3_iraf'] > 30)):
                 USEFUL_STAR = True
                 logger.info("Found a useful star: %s", the_star['sobject_id'])
-
     logger.debug("Extracting the useful information about the star")
+    logger.debug("RA = %f, Dec = %f", the_star['ra'], the_star['dec'])
     gaia_dr3_id = the_star['dr3_source_id']
     YYMMDD = str(the_star['sobject_id'])[:6]
     d = datetime.strptime(YYMMDD, "%y%m%d").date()
@@ -138,6 +138,7 @@ def main():
     hips_survey = get_hips_image(the_star, secrets_dict)
     plot_spectra(the_star)
     tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict, DRY_RUN)
+
 
 if __name__ == "__main__":
     main()
