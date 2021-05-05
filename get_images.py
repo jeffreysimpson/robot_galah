@@ -70,6 +70,7 @@ def get_hips_image(the_star, secrets_dict):
 
     ohips = [['PanSTARRS-1', 'http://alasky.u-strasbg.fr/Pan-STARRS/DR1/color-z-zg-g'],
              ['DECaLS',  'http://alasky.u-strasbg.fr/DECaLS/DR5/color'],
+             ['SDSS9', 'http://alasky.u-strasbg.fr/SDSS/DR9/color-alt/']
              ['DSS2',  "http://alasky.u-strasbg.fr/DSS/DSSColor"]
              ]
 
