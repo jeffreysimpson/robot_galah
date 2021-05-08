@@ -63,12 +63,17 @@ def main():
     dr3_source_id_arg = args.dr3_source_id
 
     tweet_content_dir = Path.joinpath(cwd, "tweet_content/.")
-    logger.debug(
-        "Deleting the old files in %s if they exist", tweet_content_dir.as_posix())
-    for f in tweet_content_dir.iterdir():
-        if f.is_file:
-            logger.debug("Deleting %s", f.name)
-            f.unlink()
+    if tweet_content_dir.exists():
+        logger.debug(
+            "Deleting the old files in %s if they exist", tweet_content_dir.as_posix())
+        for f in tweet_content_dir.iterdir():
+            if f.is_file:
+                logger.debug("Deleting %s", f.name)
+                f.unlink()
+    else:
+        logger.debug(
+            "Creating directory at %s", tweet_content_dir.as_posix())
+        tweet_content_dir.mkdir(parents=True, exist_ok=True)
 
     secrets_dict = get_secrets(cwd, logger)
     # from matplotlib.offsetbox import AnchoredText
