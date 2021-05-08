@@ -5,12 +5,16 @@ import json
 import logging
 import logging.config
 import sys
+import warnings
 from datetime import datetime
 from pathlib import Path
 from random import choice
+from urllib.parse import quote
 
 import numpy as np
 from astropy.io import fits
+from astroquery.exceptions import TableParseError
+from astroquery.simbad import Simbad
 
 from do_the_tweeting import tweet
 from get_images import get_hips_image
@@ -34,6 +38,23 @@ def get_secrets(cwd, logger):
         logger.error(e)
         logger.error("Did not load secrets file. Quitting.")
         sys.exit("Did not load secrets file. Quitting.")
+
+
+def best_id(IDs):
+    for id in IDs:
+        if id[0].startswith("V* "):
+            return id[0].split("V* ")[-1]
+        if id[0].startswith("* "):
+            return id[0].split("* ")[-1]
+        for survey_prefix in ['CoRoT', "HD", "TYC"]:
+            if id[0].startswith((survey_prefix)):
+                return id[0]
+    return None
+
+def aka_name(other_name, gaia_dr3_id):
+    if other_name is not None:
+        return f"{other_name} (Gaia eDR3 {gaia_dr3_id})"
+    return f"Gaia eDR3 {gaia_dr3_id}"
 
 
 def main():
@@ -118,6 +139,7 @@ def main():
     logger.debug("Extracting the useful information about the star")
     logger.debug("RA = %f, Dec = %f", the_star['ra'], the_star['dec'])
     gaia_dr3_id = the_star['dr3_source_id']
+    gaia_dr2_id = f"Gaia DR2 {the_star['dr2_source_id']}"
     YYMMDD = str(the_star['sobject_id'])[:6]
     d = datetime.strptime(YYMMDD, "%y%m%d").date()
     obs_date_str = d.strftime('%-d %b %Y')
@@ -126,13 +148,34 @@ def main():
     mass = the_star['m_act_bstep']
     distance = the_star['distance_bstep']
 
+    logger.debug(gaia_dr2_id)
+    with warnings.catch_warnings():
+        warnings.filterwarnings('error')
+        try:
+            simbad_ids = Simbad.query_objectids(gaia_dr2_id)
+            logger.info("There is a SIMBAD entry for %s", gaia_dr2_id)
+            logger.info("All the possible IDs for the star %s",
+                        [i[0] for i in simbad_ids])
+            other_name = best_id(simbad_ids)
+            if other_name is not None:
+                logger.info("Other name for the star is %s", other_name)
+            cds_url = f"http://cdsportal.u-strasbg.fr/?target={quote(gaia_dr2_id)}"
+            logger.info(cds_url)
+        except TableParseError:
+            other_name = None
+            logger.info("There is no SIMBAD entry for %s", gaia_dr2_id)
+            cds_url = f"http://cdsportal.u-strasbg.fr/?target={quote(' '.join([str(the_star['ra']), str(the_star['dec'])]))}"
+            logger.debug(cds_url)
+
+
     logger.info("Creating the tweet text:")
     tweet_line_1 = f"{choice(BIRD_WORDS).upper()}!"
-    tweet_line_2 = f"We observed Gaia eDR3 {gaia_dr3_id} on the night of {obs_date_str} {survey_str[survey_name]}."
+    tweet_line_2 = f"We observed {aka_name(other_name, gaia_dr3_id)} on the night of {obs_date_str} {survey_str[survey_name]}."
     tweet_line_3 = f"It is about {np.round(distance*10)*100:0.0f} pc from the Sun, and we estimate this star is {age:0.0f} Gyr old and {mass:0.1f} solar masses."
-    tweet_text = "\n\n".join([tweet_line_1, tweet_line_2, tweet_line_3])
+    tweet_line_4 = f"Find out more about this star {cds_url}"
+    tweet_text = "\n\n".join([tweet_line_1, tweet_line_2, tweet_line_3, tweet_line_4])
 
-    for line in [tweet_line_1, tweet_line_2, tweet_line_3]:
+    for line in [tweet_line_1, tweet_line_2, tweet_line_3, tweet_line_4]:
         logger.info(line)
     plot_stellar_params(galah_dr3, the_star, basest_idx_galah)
     hips_survey = get_hips_image(the_star, secrets_dict)
