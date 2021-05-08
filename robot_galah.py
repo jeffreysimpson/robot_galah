@@ -8,6 +8,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from random import choice
+from urllib.parse import quote
 
 import numpy as np
 from astropy.io import fits
@@ -16,6 +17,7 @@ from do_the_tweeting import tweet
 from get_images import get_hips_image
 from plot_spectra import plot_spectra
 from plot_stellar_params import plot_stellar_params
+from astroquery.simbad import Simbad
 
 
 def get_keys(secrets_path):
@@ -126,18 +128,29 @@ def main():
     mass = the_star['m_act_bstep']
     distance = the_star['distance_bstep']
 
+    # Seeing if the star is in Simbad
+    result_table = Simbad.query_object(f"Gaia DR2 {the_star['dr2_source_id']}")
+    simbad_name = ""
+    if len(result_table) > 0:
+        simbad_name = f" aka {result_table['MAIN_ID'][0]}"
+
     logger.info("Creating the tweet text:")
     tweet_line_1 = f"{choice(BIRD_WORDS).upper()}!"
-    tweet_line_2 = f"We observed Gaia eDR3 {gaia_dr3_id} on the night of {obs_date_str} {survey_str[survey_name]}."
+    tweet_line_2 = f"We observed Gaia eDR3 {gaia_dr3_id}{simbad_name} on the night of {obs_date_str} {survey_str[survey_name]}."
     tweet_line_3 = f"It is about {np.round(distance*10)*100:0.0f} pc from the Sun, and we estimate this star is {age:0.0f} Gyr old and {mass:0.1f} solar masses."
-    tweet_text = "\n\n".join([tweet_line_1, tweet_line_2, tweet_line_3])
+    if len(result_table) > 0:
+        tweet_line_4 = f"Find out more about this star: http://cdsportal.u-strasbg.fr/?target={quote(result_table['MAIN_ID'][0])}"
+    tweet_text = "\n\n".join([tweet_line_1,
+                              tweet_line_2,
+                              tweet_line_3,
+                              tweet_line_4])
 
-    for line in [tweet_line_1, tweet_line_2, tweet_line_3]:
+    for line in [tweet_line_1, tweet_line_2, tweet_line_3, tweet_line_4]:
         logger.info(line)
-    plot_stellar_params(galah_dr3, the_star, basest_idx_galah)
+    # plot_stellar_params(galah_dr3, the_star, basest_idx_galah)
     hips_survey = get_hips_image(the_star, secrets_dict)
-    plot_spectra(the_star)
-    tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict, DRY_RUN)
+    # plot_spectra(the_star)
+    # tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict, DRY_RUN)
 
 
 if __name__ == "__main__":
