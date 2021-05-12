@@ -68,8 +68,9 @@ def get_hips_image(the_star, secrets_dict):
 
     gaia_dr3_id = the_star['dr3_source_id']
 
-    ohips = [['PanSTARRS-1', 'http://alasky.u-strasbg.fr/Pan-STARRS/DR1/color-z-zg-g'],
-             ['DECaLS',  'http://alasky.u-strasbg.fr/DECaLS/DR5/color'],
+    ohips = [['DECaLS DR5',  'http://alasky.u-strasbg.fr/DECaLS/DR5/color'],
+             ['DES DR1', "http://datalab.noao.edu/HiPS/des_dr1/Moc.fits"],
+             ['PanSTARRS-1', 'http://alasky.u-strasbg.fr/Pan-STARRS/DR1/color-z-zg-g'],
              ['DSS2',  "http://alasky.u-strasbg.fr/DSS/DSSColor"]
              ]
 
