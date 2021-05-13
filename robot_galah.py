@@ -20,6 +20,7 @@ from do_the_tweeting import tweet
 from get_images import get_hips_image
 from plot_spectra import plot_spectra
 from plot_stellar_params import plot_stellar_params
+from astroquery.simbad import Simbad
 
 
 def get_keys(secrets_path):
@@ -82,12 +83,17 @@ def main():
     dr3_source_id_arg = args.dr3_source_id
 
     tweet_content_dir = Path.joinpath(cwd, "tweet_content/.")
-    logger.debug(
-        "Deleting the old files in %s if they exist", tweet_content_dir.as_posix())
-    for f in tweet_content_dir.iterdir():
-        if f.is_file:
-            logger.debug("Deleting %s", f.name)
-            f.unlink()
+    if tweet_content_dir.exists():
+        logger.debug(
+            "Deleting the old files in %s if they exist", tweet_content_dir.as_posix())
+        for f in tweet_content_dir.iterdir():
+            if f.is_file:
+                logger.debug("Deleting %s", f.name)
+                f.unlink()
+    else:
+        logger.debug(
+            "Creating directory at %s", tweet_content_dir.as_posix())
+        tweet_content_dir.mkdir(parents=True, exist_ok=True)
 
     secrets_dict = get_secrets(cwd, logger)
     # from matplotlib.offsetbox import AnchoredText
@@ -177,10 +183,10 @@ def main():
 
     for line in [tweet_line_1, tweet_line_2, tweet_line_3, tweet_line_4]:
         logger.info(line)
-    plot_stellar_params(galah_dr3, the_star, basest_idx_galah)
+    # plot_stellar_params(galah_dr3, the_star, basest_idx_galah)
     hips_survey = get_hips_image(the_star, secrets_dict)
-    plot_spectra(the_star)
-    tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict, DRY_RUN)
+    # plot_spectra(the_star)
+    # tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict, DRY_RUN)
 
 
 if __name__ == "__main__":
