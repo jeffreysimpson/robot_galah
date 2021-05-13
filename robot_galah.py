@@ -183,10 +183,10 @@ def main():
 
     for line in [tweet_line_1, tweet_line_2, tweet_line_3, tweet_line_4]:
         logger.info(line)
-    # plot_stellar_params(galah_dr3, the_star, basest_idx_galah)
+    plot_stellar_params(galah_dr3, the_star, basest_idx_galah)
     hips_survey = get_hips_image(the_star, secrets_dict)
-    # plot_spectra(the_star)
-    # tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict, DRY_RUN)
+    plot_spectra(the_star)
+    tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict, DRY_RUN)
 
 
 if __name__ == "__main__":
