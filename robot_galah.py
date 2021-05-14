@@ -113,7 +113,7 @@ def main():
                   "galah_faint": "during the main GALAH survey",
                   "k2_hermes": "during the K2-HERMES survey",
                   "tess_hermes": "during the TESS-HERMES survey",
-                  "other": "during a special observing programme", }
+                  "other": "during a special programme", }
 
     if (sobject_id_arg is not None):
         logger.info("Told to do a specific star: sobject_id=%s",
