@@ -71,9 +71,13 @@ def plot_spectra(the_star):
         specific_layout=plot_list_base,
     )
 
-    rv_correction = (
-        c / ((the_star['rv_galah'] * u.km / u.s) + c)).decompose().value
-    logger.debug("Applying an RV correction of %s", rv_correction)
+    if np.isnan(the_star['rv_galah']):
+        rv_correction = 1.
+        logger.debug("rv_galah is a nan")
+    else:
+        rv_correction = (
+            c / ((the_star['rv_galah'] * u.km / u.s) + c)).decompose().value
+        logger.debug("Applying an RV correction of %s", rv_correction)
 
     for *_, spec_row in df.iterrows():
         url = spec_row['access_url'] + "&RESPONSEFORMAT=fits"
