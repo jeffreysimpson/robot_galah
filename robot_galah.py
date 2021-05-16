@@ -170,7 +170,7 @@ def main():
         except TableParseError:
             other_name = None
             logger.info("There is no SIMBAD entry for %s", gaia_dr2_id)
-            cds_url = f"http://cdsportal.u-strasbg.fr/?target={quote(' '.join([str(the_star['ra']), str(the_star['dec'])]))}"
+            cds_url = f"https://cdsportal.u-strasbg.fr/?target={quote(' '.join([str(the_star['ra']), str(the_star['dec'])]))}"
             logger.debug(cds_url)
 
 
