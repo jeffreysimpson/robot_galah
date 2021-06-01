@@ -28,7 +28,7 @@ def media_load(filename, alt_text, api, logger):
     return media.media_id_string
 
 
-def tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict, DRY_RUN=False):
+def tweet(tweet_text, hips_survey, BEST_NAME, secrets_dict, DRY_RUN=False):
 
     cwd = Path(__file__).parent
 
@@ -39,10 +39,10 @@ def tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict, DRY_RUN=False):
     # create logger
     logger = logging.getLogger('do_the_tweeting')
 
-    alt_text_dict = {"sky_image_overlay.jpg": f"A 15 by 15 arcminute image from the {hips_survey}. Gaia eDR3 {gaia_dr3_id} is found at the centre.",
-                     "stellar_params_teff.png": f"Two graphs made from GALAH survey data. The top panel is a temperature versus surface gravity, and the bottom panel is the Tinsley-Wallerstein diagram showing the metallicity versus the alpha abundance. On both, Gaia eDR3 {gaia_dr3_id} is indicated with a big red star.",
-                     "stellar_params_L_Z.png": f"Two graphs made from GALAH survey data. The top panel is the z-component of the angular momentum versus the orbital energy. The bottom panel is the Toomre diagram. On both, Gaia eDR3 {gaia_dr3_id} is indicated with a big red star.",
-                     "spectra.png": f"The normalized HERMES spectrum of Gaia eDR3 {gaia_dr3_id}. HERMES acquires the spectrum of the star in four non-contiguous wavelength regions: Blue, Green, Red, and Infrared."}
+    alt_text_dict = {"sky_image_overlay.jpg": f"A 15 by 15 arcminute image from the {hips_survey}. {BEST_NAME} is found at the centre.",
+                     "stellar_params_teff.png": f"Two graphs made from GALAH survey data. The top panel is a temperature versus surface gravity, and the bottom panel is the Tinsley-Wallerstein diagram showing the metallicity versus the alpha abundance. On both, {BEST_NAME} is indicated with a big red star.",
+                     "stellar_params_L_Z.png": f"Two graphs made from GALAH survey data. The top panel is the z-component of the angular momentum versus the orbital energy. The bottom panel is the Toomre diagram. On both, {BEST_NAME} is indicated with a big red star.",
+                     "spectra.png": f"The normalized HERMES spectrum of {BEST_NAME}. HERMES acquires the spectrum of the star in four non-contiguous wavelength regions: Blue, Green, Red, and Infrared."}
 
     auth = tweepy.OAuthHandler(
         secrets_dict['consumer_key'], secrets_dict['consumer_secret'])

@@ -40,8 +40,8 @@ def download_image(survey_url, the_star, logger, base_image):
     width = 1000
     height = 1000
     fov = 0.25
-    url = 'http://alasky.u-strasbg.fr/hips-image-services/hips2fits?hips={}&width={}&height={}&fov={}&projection=TAN&coordsys=icrs&ra={}&dec={}&format=jpg&stretch=power'.format(
-        quote(survey_url), width, height, fov, the_star['ra'], the_star['dec'])
+    url = 'http://alasky.u-strasbg.fr/hips-image-services/hips2fits?hips={}&width={}&height={}&fov={}&projection=TAN&coordsys=icrs&ra={}&dec={}&format=jpg&stretch=linear'.format(
+        quote(survey_url), width, height, fov, the_star['ra_dr2'], the_star['dec_dr2'])
     logger.debug("Trying %s", url)
     response = requests.get(url, stream=True)
 
@@ -53,11 +53,12 @@ def download_image(survey_url, the_star, logger, base_image):
         del response
     else:
         logger.error("BAD HTTP response: %s", response.status_code)
+        logger.error("%s", response.json()['title'])
         logger.error("Did not get the sky image. Quitting.")
         sys.exit("Did not get the sky image. Quitting.")
 
 
-def get_hips_image(the_star, secrets_dict):
+def get_hips_image(the_star, BEST_NAME, secrets_dict):
     """Main function to get a sky image for the given star."""
     cwd = Path(__file__).parent
     tweet_content_dir = Path.joinpath(cwd, "tweet_content")
@@ -66,14 +67,13 @@ def get_hips_image(the_star, secrets_dict):
     # create logger
     logger = logging.getLogger('get_images')
 
-    gaia_dr3_id = the_star['dr3_source_id']
-
-    ohips = [['DECaLS DR5',  'http://alasky.u-strasbg.fr/DECaLS/DR5/color'],
-             ['DES DR1', "http://alasky.u-strasbg.fr/DES/CDS_P_DES-DR1_ColorIRG"],
-             ['PanSTARRS-1', 'http://alasky.u-strasbg.fr/Pan-STARRS/DR1/color-z-zg-g'],
-             ['SDSS9', 'http://alasky.u-strasbg.fr/SDSS/DR9/color-alt/'],
-             ['DSS2',  "http://alasky.u-strasbg.fr/DSS/DSSColor"]
-             ]
+    ohips = [
+        ['DECaLS DR5',  'http://alasky.u-strasbg.fr/DECaLS/DR5/color'],
+        ['DES DR1', "http://alasky.u-strasbg.fr/DES/CDS_P_DES-DR1_ColorIRG"],
+        ['PanSTARRS-1', 'http://alasky.u-strasbg.fr/Pan-STARRS/DR1/color-z-zg-g'],
+        ['SDSS9', 'http://alasky.u-strasbg.fr/SDSS/DR9/color-alt'],
+        ['DSS2',  "http://alasky.u-strasbg.fr/DSS/DSSColor"]
+        ]
 
     base_image = Path.joinpath(tweet_content_dir, "sky_image.jpg")
 
@@ -106,7 +106,7 @@ def get_hips_image(the_star, secrets_dict):
                (500, (500 + 20))], fill='white', width=5)
     draw.line([(815, (1000 - 70)),
                (815 + 1000 / 15 * 2, (1000 - 70))], fill='white', width=5)
-    draw.text((30, 10), f"Gaia eDR3 {gaia_dr3_id}", (255, 255, 255), font=font)
+    draw.text((30, 10), f"{BEST_NAME}", (255, 255, 255), font=font)
     draw.text((30, (1000 - 60)),
               f"{survey}", (255, 255, 255), font=font)
     draw.text((800, (1000 - 60)), "2 arcmin", (255, 255, 255), font=font)

@@ -21,7 +21,7 @@ URL = "https://datacentral.org.au/vo/ssa/query"
 service = SSAService(URL)
 
 
-def plot_spectra(the_star):
+def plot_spectra(the_star, BEST_NAME):
 
     rcParams['font.family'] = "sans-serif"
     rcParams['font.sans-serif'] = ["Roboto"]
@@ -104,7 +104,7 @@ def plot_spectra(the_star):
          })
 
     axes['B'].set_title(
-        f"Normalized HERMES spectrum of\nGaia eDR3 {the_star['dr3_source_id']}")
+        f"Normalized HERMES spectrum of\n{BEST_NAME}")
 
     for missing_band in [band for band in bands_names if band not in df['band_name'].to_list()]:
         redo_axes_list[missing_band].update(

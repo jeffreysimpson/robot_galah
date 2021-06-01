@@ -21,6 +21,128 @@ from get_images import get_hips_image
 from plot_spectra import plot_spectra
 from plot_stellar_params import plot_stellar_params
 from astroquery.simbad import Simbad
+import astropy.coordinates as coord
+import astropy.units as u
+
+greek_alphabet = {
+    'alpha': 'α', 'alf': 'α',
+    'beta': 'β', 'bet': 'β',
+    'gamma': 'γ', 'gam': 'γ',
+    'delta': 'δ', 'del': 'δ',
+    'epsilon': 'ε', 'eps': 'ε',
+    'zeta': 'ζ', 'zet': 'ζ',
+    'eta': 'η',
+    'theta': 'θ',
+    'iota': 'ι',
+    'kappa': 'κ', 'kap': 'κ',
+    'lamda': 'λ',
+    'mu': 'μ', 'mu.': 'μ',
+    'nu': 'ν', 'nu.': 'ν',
+    'xi': 'ξ', 'ksi': 'ξ',
+    'omicron': 'ο',
+    'pi': 'π',
+    'rho': 'ρ',
+    'sigma': 'σ',
+    'tau': 'τ',
+    'upsilon': 'υ',
+    'phi': 'φ',
+    'chi': 'χ',
+    'psi': 'ψ',
+    'omega': 'ω'}
+
+constellation_names = {
+    "And": "Andromedae",
+    "Ant": "Antliae",
+    "Aps": "Apodis",
+    "Aqr": "Aquarii",
+    "Aql": "Aquilae",
+    "Ara": "Arae",
+    "Ari": "Arietis",
+    "Aur": "Aurigae",
+    "Boo": "Boötis",
+    "Cae": "Caeli",
+    "Cam": "Camelopardalis",
+    "Cnc": "Cancri",
+    "CVn": "Canum Venaticorum",
+    "CMa": "Canis Majoris",
+    "CMi": "Canis Minoris",
+    "Cap": "Capricorni",
+    "Car": "Carinae",
+    "Cas": "Cassiopeiae",
+    "Cen": "Centauri",
+    "Cep": "Cephei",
+    "Cet": "Ceti",
+    "Cha": "Chamaeleontis",
+    "Cir": "Circini",
+    "Col": "Columbae",
+    "Com": "Comae Berenices",
+    "CrA": "Coronae Australis",
+    "CrB": "Coronae Borealis",
+    "Crv": "Corvi",
+    "Crt": "Crateris",
+    "Cru": "Crucis",
+    "Cyg": "Cygni",
+    "Del": "Delphini",
+    "Dor": "Doradus",
+    "Dra": "Draconis",
+    "Equ": "Equulei",
+    "Eri": "Eridani",
+    "For": "Fornacis",
+    "Gem": "Geminorum",
+    "Gru": "Gruis",
+    "Her": "Herculis",
+    "Hor": "Horologii",
+    "Hya": "Hydrae",
+    "Hyi": "Hydri",
+    "Ind": "Indi",
+    "Lac": "Lacertae",
+    "Leo": "Leonis",
+    "LMi": "Leonis Minoris",
+    "Lep": "Leporis",
+    "Lib": "Librae",
+    "Lup": "Lupi",
+    "Lyn": "Lyncis",
+    "Lyr": "Lyrae",
+    "Men": "Mensae",
+    "Mic": "Microscopii",
+    "Mon": "Monocerotis",
+    "Mus": "Muscae",
+    "Nor": "Normae",
+    "Oct": "Octantis",
+    "Oph": "Ophiuchi",
+    "Ori": "Orionis",
+    "Pav": "Pavonis",
+    "Peg": "Pegasi",
+    "Per": "Persei",
+    "Phe": "Phoenicis",
+    "Pic": "Pictoris",
+    "Psc": "Piscium",
+    "PsA": "Piscis Austrini",
+    "Pup": "Puppis",
+    "Pyx": "Pyxidis",
+    "Ret": "Reticuli",
+    "Sge": "Sagittae",
+    "Sgr": "Sagittarii",
+    "Sco": "Scorpii",
+    "Scl": "Sculptoris",
+    "Sct": "Scuti",
+    "Ser": "Serpentis",
+    "Sex": "Sextantis",
+    "Tau": "Tauri",
+    "Tel": "Telescopii",
+    "Tri": "Trianguli",
+    "TrA": "Trianguli Australis",
+    "Tuc": "Tucanae",
+    "UMa": "Ursae Majoris",
+    "UMi": "Ursae Minoris",
+    "Vel": "Velorum",
+    "Vir": "Virginis",
+    "Vol": "Volantis",
+    "Vul": "Vulpeculae"}
+
+superscript_map = {
+    "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶",
+    "7": "⁷", "8": "⁸", "9": "⁹"}
 
 
 def get_keys(secrets_path):
@@ -41,22 +163,121 @@ def get_secrets(cwd, logger):
         sys.exit("Did not load secrets file. Quitting.")
 
 
-def best_id(IDs):
-    for id in IDs:
-        if id[0].startswith("V* "):
-            return id[0].split("V* ")[-1]
-        if id[0].startswith("* "):
-            return id[0].split("* ")[-1]
-        for survey_prefix in ['CoRoT', "HD", "TYC"]:
-            if id[0].startswith((survey_prefix)):
-                return id[0]
-    return None
+def simbad_sky_search(ra, dec):
+    return Simbad.query_region(coord.SkyCoord(ra, dec,
+                                              unit=(u.deg, u.deg), frame='icrs'),
+                               radius='0d0m2s')
 
-def aka_name(other_name, gaia_dr3_id):
-    if other_name is not None:
-        return f"{other_name} (Gaia eDR3 {gaia_dr3_id})"
-    return f"Gaia eDR3 {gaia_dr3_id}"
 
+def in_simbad(the_star, logger):
+    with warnings.catch_warnings():
+        warnings.filterwarnings('error')
+        try:
+            logger.info(
+                f"Searching SIMBAD for Gaia DR2 {the_star['dr2_source_id']}")
+            result_table = Simbad.query_object(
+                f"Gaia DR2 {the_star['dr2_source_id']}")
+        except TableParseError:
+            logger.info(
+                f"No SIMBAD match for Gaia DR2 {the_star['dr2_source_id']}")
+            try:
+                logger.info(
+                    "Doing a sky search around %f, %f", the_star['ra_dr2'], the_star['dec_dr2'])
+                result_table = simbad_sky_search(
+                    the_star['ra_dr2'], the_star['dec_dr2'])
+            except TableParseError:
+                logger.info(
+                    f"No results for a sky search around {the_star['ra_dr2']:0.5f}, {the_star['dec_dr2']:0.5f}")
+                return None
+        logger.info(f"Found a match in SIMBAD: {result_table['MAIN_ID'][0]}")
+        return result_table['MAIN_ID'][0]
+
+
+def get_best_name(simbad_main_id,  constellation_name, logger):
+    all_possible_names = Simbad.query_objectids(simbad_main_id)
+    # Does this star have a common name?
+    NAME_values = [" ".join(i[0].split()[1:])
+                   for i in all_possible_names if i[0].startswith("NAME")]
+    COMMON_NAME = None
+    logger.info("Are there any NAME values?")
+    if len(NAME_values) > 0:
+        logger.info("All NAME values:")
+        for i in NAME_values:
+            logger.info(i)
+        COMMON_NAME = NAME_values[0]
+
+    # Are there any with a * ?
+    asterisk_values = sorted([" ".join(i[0].split()[1:])
+                             for i in all_possible_names if i[0].startswith("* ")], reverse=True)
+    logger.info("Are there any * values?")
+    if len(asterisk_values) > 0:
+        logger.info("All asterisk_values values:")
+        for i in asterisk_values:
+            logger.info(i)
+        best = asterisk_values[0].split()
+        if best[0] in greek_alphabet:
+            best[0] = greek_alphabet[best[0]]
+
+        # There are a few stars with Greek letter and a superscript number
+        if len(best[0]) > 3:
+            best[0] = [best[0][:3], best[0][3:]]
+            best[0][0] = greek_alphabet[best[0][0]]
+            best[0][1] = superscript_map[best[0][1].replace('0', "")]
+            best[0] = "".join(best[0])
+
+        best[1] = constellation_names[best[1]]
+        STAR_NAME = " ".join(best)
+        if COMMON_NAME is not None:
+            return f"{COMMON_NAME} ({STAR_NAME})"
+        if COMMON_NAME is None:
+            return f"{STAR_NAME}"
+
+    logger.info("Are there any V* values?")
+    v_asterisk_values = [" ".join(i[0].split()[1:])
+                         for i in all_possible_names if i[0].startswith("V* ")]
+    if len(v_asterisk_values) > 0:
+        logger.info("All V* values", v_asterisk_values)
+        best = v_asterisk_values[0].split()
+        best[1] = constellation_names[best[1]]
+        STAR_NAME = " ".join(best)
+        return f"{STAR_NAME}"
+
+    for possible_start in ["HD ", "HIP ",
+                           "CD-",
+                           "BD-", "BD+",
+                           "CPD-",
+                           "TYC "
+                           ]:
+        logger.info(f"Are there any {possible_start} values?")
+        id_values = [i[0]
+                     for i in all_possible_names if i[0].startswith(possible_start)]
+        if len(id_values) > 0:
+            logger.info("All %s values:", possible_start)
+            for i in id_values:
+                logger.info(i)
+            STAR_NAME = " ".join(id_values[0].split())
+            return f"{STAR_NAME}"
+
+    logger.debug([i[0] for i in all_possible_names])
+
+def distance_str(the_star):
+    distance = the_star['distance_bstep'] * 1000
+    e_distance = the_star['e_distance_bstep'] * 1000
+    error_size = 10 ** (len(str(abs(int(e_distance))))-1)
+    rounded_distance = int(np.round(distance / error_size) * error_size)
+    if rounded_distance < 1000:
+        return f"{rounded_distance} pc"
+    if rounded_distance > 1000:
+        return f"{rounded_distance/1000:0.1f} kpc"
+
+def mass_str(the_star):
+    return f"{the_star['m_act_bstep']:0.1f} solar masses"
+
+def age_str(the_star):
+    if the_star['age_bstep'] >= 1:
+        return f"{the_star['age_bstep']:0.1f} Gyr"
+    if the_star['age_bstep'] < 1:
+        return f"{the_star['age_bstep']*1000:0.0f} Myr"
 
 def main():
     cwd = Path(__file__).parent
@@ -144,49 +365,51 @@ def main():
                 logger.info("Found a useful star: %s", the_star['sobject_id'])
     logger.debug("Extracting the useful information about the star")
     logger.debug("RA = %f, Dec = %f", the_star['ra'], the_star['dec'])
-    gaia_dr3_id = the_star['dr3_source_id']
-    gaia_dr2_id = f"Gaia DR2 {the_star['dr2_source_id']}"
-    YYMMDD = str(the_star['sobject_id'])[:6]
-    d = datetime.strptime(YYMMDD, "%y%m%d").date()
+
+    d = datetime.strptime(str(the_star['sobject_id'])[:6], "%y%m%d").date()
     obs_date_str = d.strftime('%-d %b %Y')
     survey_name = the_star['survey_name']
-    age = the_star['age_bstep']
-    mass = the_star['m_act_bstep']
-    distance = the_star['distance_bstep']
 
-    logger.debug(gaia_dr2_id)
-    with warnings.catch_warnings():
-        warnings.filterwarnings('error')
-        try:
-            simbad_ids = Simbad.query_objectids(gaia_dr2_id)
-            logger.info("There is a SIMBAD entry for %s", gaia_dr2_id)
-            logger.info("All the possible IDs for the star %s",
-                        [i[0] for i in simbad_ids])
-            other_name = best_id(simbad_ids)
-            if other_name is not None:
-                logger.info("Other name for the star is %s", other_name)
-            cds_url = f"http://cdsportal.u-strasbg.fr/?target={quote(gaia_dr2_id)}"
-            logger.info(cds_url)
-        except TableParseError:
-            other_name = None
-            logger.info("There is no SIMBAD entry for %s", gaia_dr2_id)
-            cds_url = f"http://cdsportal.u-strasbg.fr/?target={quote(' '.join([str(the_star['ra']), str(the_star['dec'])]))}"
-            logger.debug(cds_url)
+    # There are about 300 otherwise good stars that lack BSTEP data
+    if not np.isnan(the_star['age_bstep']):
+        HAS_BSTEP = True
+        distance = distance_str(the_star)
+        mass = mass_str(the_star)
+        age = age_str(the_star)
+    else:
+        logger.warning("No BSTEP values for this star!")
+        HAS_BSTEP = False
 
+    constellation_name = coord.get_constellation(coord.SkyCoord(the_star['ra_dr2'],
+                                                                the_star['dec_dr2'],
+                                                                unit=(u.deg, u.deg), frame='icrs'))
+
+    simbad_main_id = in_simbad(the_star, logger)
+    if simbad_main_id is None:
+        BEST_NAME = f"Gaia eDR3 {the_star['dr3_source_id']}"
+        cds_url = f"http://cdsportal.u-strasbg.fr/?target={quote(' '.join([str(the_star['ra']), str(the_star['dec'])]))}"
+    else:
+        cds_url = f"http://cdsportal.u-strasbg.fr/?target={quote(simbad_main_id)}"
+        BEST_NAME = get_best_name(simbad_main_id, constellation_name, logger)
+        if BEST_NAME is None:
+            logger.warning("No best name!")
+            BEST_NAME = f"Gaia eDR3 {the_star['dr3_source_id']}"
 
     logger.info("Creating the tweet text:")
-    tweet_line_1 = f"{choice(BIRD_WORDS).upper()}!"
-    tweet_line_2 = f"We observed {aka_name(other_name, gaia_dr3_id)} on the night of {obs_date_str} {survey_str[survey_name]}."
-    tweet_line_3 = f"It is about {np.round(distance*10)*100:0.0f} pc from the Sun, and we estimate this star is {age:0.0f} Gyr old and {mass:0.1f} solar masses."
-    tweet_line_4 = f"Find out more about this star {cds_url}"
-    tweet_text = "\n\n".join([tweet_line_1, tweet_line_2, tweet_line_3, tweet_line_4])
+    tweet_list = []
+    tweet_list.append(f"{choice(BIRD_WORDS).upper()}!")
+    tweet_list.append(f"We observed {BEST_NAME} in the constellation of {constellation_name} on {obs_date_str} {survey_str[survey_name]}.")
+    if HAS_BSTEP:
+        tweet_list.append(f"It is {distance} from the Sun, aged {age}, and is {mass}.")
+    tweet_list.append(f"Find out more about this star {cds_url}")
+    tweet_text = "\n\n".join(tweet_list)
+    for l in tweet_list:
+        logger.info(l)
 
-    for line in [tweet_line_1, tweet_line_2, tweet_line_3, tweet_line_4]:
-        logger.info(line)
-    plot_stellar_params(galah_dr3, the_star, basest_idx_galah)
-    hips_survey = get_hips_image(the_star, secrets_dict)
-    plot_spectra(the_star)
-    tweet(tweet_text, hips_survey, gaia_dr3_id, secrets_dict, DRY_RUN)
+    plot_stellar_params(galah_dr3, the_star, BEST_NAME, basest_idx_galah)
+    hips_survey = get_hips_image(the_star, BEST_NAME, secrets_dict)
+    plot_spectra(the_star, BEST_NAME)
+    tweet(tweet_text, hips_survey, BEST_NAME, secrets_dict, DRY_RUN)
 
 
 if __name__ == "__main__":
