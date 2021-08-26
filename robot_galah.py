@@ -278,6 +278,49 @@ def age_str(the_star):
         return f"{the_star['age_bstep']:0.1f} Gyr"
     if the_star['age_bstep'] < 1:
         return f"{the_star['age_bstep']*1000:0.0f} Myr"
+    
+def get_star(galah_dr3, logger=None,
+             sobject_id_arg=None, dr3_source_id_arg=None,
+             LOGGING=True):
+    if (sobject_id_arg is not None):
+        if LOGGING:
+            logger.info("Told to do a specific star: sobject_id=%s",
+                        sobject_id_arg)
+        star_idx = galah_dr3['sobject_id'] == sobject_id_arg
+        if not np.any(star_idx):
+            if LOGGING:
+                logger.error("Not a valid sobject_id. Quitting.")
+            sys.exit("Not a valid sobject_id. Quitting.")
+        the_star = galah_dr3[star_idx][0]
+    elif (dr3_source_id_arg is not None):
+        if LOGGING:
+            logger.info("Told to do a specific star: dr3_source_id=%s",
+                        dr3_source_id_arg)
+        star_idx = galah_dr3['dr3_source_id'] == dr3_source_id_arg
+        if not np.any(star_idx):
+            if LOGGING:
+                logger.error("Not a valid dr3_source_id. Quitting.")
+            sys.exit("Not a valid dr3_source_id. Quitting.")
+        the_star = galah_dr3[star_idx][0]
+    else:
+        USEFUL_STAR = False
+        while USEFUL_STAR is False:
+            rand_idx = np.random.randint(low=0, high=len(galah_dr3))
+            if LOGGING:
+                logger.debug("Trying index %i", rand_idx)
+            the_star = galah_dr3[rand_idx]
+            if ((the_star['flag_sp'] == 0) &
+                (the_star['flag_fe_h'] == 0) &
+                    (the_star['snr_c3_iraf'] > 30)):
+                USEFUL_STAR = True
+                if LOGGING:
+                    logger.info("Found a useful star: %s", the_star['sobject_id'])
+    if LOGGING:
+        logger.debug("Extracting the useful information about the star")
+        logger.debug("RA = %f, Dec = %f", the_star['ra'], the_star['dec'])
+    return the_star
+
+    
 
 def main():
     cwd = Path(__file__).parent
@@ -336,35 +379,10 @@ def main():
                   "tess_hermes": "during the TESS-HERMES survey",
                   "other": "during a special programme", }
 
-    if (sobject_id_arg is not None):
-        logger.info("Told to do a specific star: sobject_id=%s",
-                    sobject_id_arg)
-        star_idx = galah_dr3['sobject_id'] == sobject_id_arg
-        if not np.any(star_idx):
-            logger.error("Not a valid sobject_id. Quitting.")
-            sys.exit("Not a valid sobject_id. Quitting.")
-        the_star = galah_dr3[star_idx][0]
-    elif (dr3_source_id_arg is not None):
-        logger.info("Told to do a specific star: dr3_source_id=%s",
-                    dr3_source_id_arg)
-        star_idx = galah_dr3['dr3_source_id'] == dr3_source_id_arg
-        if not np.any(star_idx):
-            logger.error("Not a valid dr3_source_id. Quitting.")
-            sys.exit("Not a valid dr3_source_id. Quitting.")
-        the_star = galah_dr3[star_idx][0]
-    else:
-        USEFUL_STAR = False
-        while USEFUL_STAR is False:
-            rand_idx = np.random.randint(low=0, high=len(galah_dr3))
-            logger.debug("Trying index %i", rand_idx)
-            the_star = galah_dr3[rand_idx]
-            if ((the_star['flag_sp'] == 0) &
-                (the_star['flag_fe_h'] == 0) &
-                    (the_star['snr_c3_iraf'] > 30)):
-                USEFUL_STAR = True
-                logger.info("Found a useful star: %s", the_star['sobject_id'])
-    logger.debug("Extracting the useful information about the star")
-    logger.debug("RA = %f, Dec = %f", the_star['ra'], the_star['dec'])
+    the_star = get_star(galah_dr3, logger, 
+                        sobject_id_arg=sobject_id_arg,
+                        dr3_source_id_arg=dr3_source_id_arg)
+
 
     d = datetime.strptime(str(the_star['sobject_id'])[:6], "%y%m%d").date()
     obs_date_str = d.strftime('%-d %b %Y')

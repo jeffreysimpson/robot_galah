@@ -3,33 +3,9 @@ import logging.config
 import shutil
 import sys
 from pathlib import Path
-from urllib.error import HTTPError
-from urllib.parse import quote
 
 import requests
-from astropy import units as u
-from mocpy import MOC
 from PIL import Image, ImageDraw, ImageFont
-
-
-def within_footprint(survey_url, the_star, logger):
-    """Checks if the star is within the footprint of a given survey."""
-
-    # PanSTARRS-1 gets a little hairy below -29.5 degrees but still returns images.
-    # There are also places of no images (see Gaia eDR3 5463018973958284928)
-    # but the MOC thinks there are images, but actually you get gibberish.
-    if ("Pan-STARRS" in survey_url) and the_star['dec'] < -29.5:
-        return False
-    try:
-        moc_url = f"{survey_url}/Moc.fits"
-        survey_moc = MOC.from_fits(moc_url)
-        return survey_moc.contains(the_star['ra'] * u.degree,
-                                   the_star['dec'] * u.degree)[0]
-    except HTTPError as e:
-        logger.error(e)
-        logger.error("Did not get the MOC file from %s. Quitting.", moc_url)
-        sys.exit("Did not get the MOC file. Quitting.")
-
 
 def download_image(survey_url, the_star, logger, base_image):
     """Downloads the HiPS image.
@@ -37,14 +13,20 @@ def download_image(survey_url, the_star, logger, base_image):
     This research made use of hips2fits,
     (https://alasky.u-strasbg.fr/hips-image-services/hips2fits)
     a service provided by CDS."""
-    width = 1000
-    height = 1000
-    fov = 0.25
-    url = 'http://alasky.u-strasbg.fr/hips-image-services/hips2fits?hips={}&width={}&height={}&fov={}&projection=TAN&coordsys=icrs&ra={}&dec={}&format=jpg&stretch=linear'.format(
-        quote(survey_url), width, height, fov, the_star['ra_dr2'], the_star['dec_dr2'])
-    logger.debug("Trying %s", url)
-    response = requests.get(url, stream=True)
-
+    response = requests.get(url="http://alasky.u-strasbg.fr/hips-image-services/hips2fits",
+                            params={"hips": survey_url,
+                                    "width": 1000,
+                                    "height": 1000,
+                                    "fov": 0.25,
+                                    "projection": "TAN",
+                                    "coordsys": "icrs",
+                                    "ra": the_star['ra_dr2'],
+                                    "dec": the_star['dec_dr2'],
+                                    "format":"jpg",
+                                    "stretch":"linear"
+                                    },
+                            stream=True)
+    logger.debug("Tried %s", response.url)
     if response.status_code < 400:
         logger.debug("HTTP response: %s", response.status_code)
         with open(base_image, 'wb') as out_file:
@@ -57,37 +39,15 @@ def download_image(survey_url, the_star, logger, base_image):
         logger.error("Did not get the sky image. Quitting.")
         sys.exit("Did not get the sky image. Quitting.")
 
+def get_best_survey(avail_hips, wanted_surveys):
+    rankings = dict(zip(wanted_surveys,range(len(wanted_surveys))))
+    best_survey_id = wanted_surveys[min([rankings[avail_hip['ID']] for avail_hip in avail_hips])]
+    return list(filter(lambda x:x["ID"] == best_survey_id, avail_hips))[0]
 
-def get_hips_image(the_star, BEST_NAME, secrets_dict):
-    """Main function to get a sky image for the given star."""
-    cwd = Path(__file__).parent
-    tweet_content_dir = Path.joinpath(cwd, "tweet_content")
-    config_file = Path.joinpath(cwd, 'logging.conf')
-    logging.config.fileConfig(config_file)
-    # create logger
-    logger = logging.getLogger('get_images')
 
-    ohips = [
-        ['DECaLS DR5',  'http://alasky.u-strasbg.fr/DECaLS/DR5/color'],
-        ['DES DR1', "http://alasky.u-strasbg.fr/DES/CDS_P_DES-DR1_ColorIRG"],
-        ['PanSTARRS-1', 'http://alasky.u-strasbg.fr/Pan-STARRS/DR1/color-z-zg-g'],
-        ['SDSS9', 'http://alasky.u-strasbg.fr/SDSS/DR9/color-alt'],
-        ['DSS2',  "http://alasky.u-strasbg.fr/DSS/DSSColor"]
-        ]
-
-    base_image = Path.joinpath(tweet_content_dir, "sky_image.jpg")
-
-    for survey, survey_url in ohips:
-        logger.info("Trying %s", survey)
-        if within_footprint(survey_url, the_star, logger):
-
-            logger.info("Target is within footprint of %s", survey)
-            download_image(survey_url, the_star, logger, base_image)
-            if base_image.is_file():
-                break
-        else:
-            logger.info("Target is *not* within footprint of %s", survey)
-
+def add_overlay(base_image, secrets_dict,
+                logger, tweet_content_dir, BEST_NAME,
+                survey_name):
     # Necessary to force to a string here for the ImageFont bit.
     font = ImageFont.truetype(str(Path.joinpath(Path(secrets_dict["font_dir"]),
                                                 "Roboto-Bold.ttf")),
@@ -108,9 +68,57 @@ def get_hips_image(the_star, BEST_NAME, secrets_dict):
                (815 + 1000 / 15 * 2, (1000 - 70))], fill='white', width=5)
     draw.text((30, 10), f"{BEST_NAME}", (255, 255, 255), font=font)
     draw.text((30, (1000 - 60)),
-              f"{survey}", (255, 255, 255), font=font)
+              f"{survey_name}", (255, 255, 255), font=font)
     draw.text((800, (1000 - 60)), "2 arcmin", (255, 255, 255), font=font)
     overlayed_image = Path.joinpath(tweet_content_dir, "sky_image_overlay.jpg")
     img_sky.save(overlayed_image)
     logger.info("Saved overlayed image to %s", overlayed_image)
-    return survey
+
+def get_hips_image(the_star, BEST_NAME, secrets_dict):
+    """Main function to get a sky image for the given star."""
+    cwd = Path(__file__).parent
+    tweet_content_dir = Path.joinpath(cwd, "tweet_content")
+    config_file = Path.joinpath(cwd, 'logging.conf')
+    logging.config.fileConfig(config_file)
+    # create logger
+    logger = logging.getLogger('get_images')
+
+    base_image = Path.joinpath(tweet_content_dir, "sky_image.jpg")
+    
+    wanted_surveys =  ["CDS/P/DECaLS/DR5/color",
+                       "cds/P/DES-DR1/ColorIRG",
+                       "CDS/P/PanSTARRS/DR1/color-z-zg-g",
+                       "CDS/P/SDSS9/color-alt",
+                       "CDS/P/DSS2/color"]
+
+    logger.info("Getting the list of useful HIPS")
+    response = requests.get(url="http://alasky.unistra.fr/MocServer/query",
+                            params={"fmt": "json",
+                                    "RA": the_star['ra_dr2'],
+                                    "DEC": the_star['dec_dr2'],
+                                    "SR": 0.25,
+                                    "intersect":"enclosed",
+    #                                 "dataproduct_subtype":"color",
+                                    "fields":",".join(["ID","hips_service_url", "obs_title"]),
+                                    "creator_did":",".join([f"*{i}*" for i in wanted_surveys]),
+                                    })
+    if response.status_code < 400:
+        logger.debug("HTTP response: %s", response.status_code)
+        avail_hips = response.json()
+        for possible_survey in avail_hips:
+            logger.debug("Possible HIPS options: %s", possible_survey['ID'])
+        best_survey = get_best_survey(avail_hips, wanted_surveys)
+        logger.info("The best ranking survey is: %s", best_survey['ID'])
+        download_image(best_survey['hips_service_url'], the_star, logger, base_image)
+        del response
+    else:
+        logger.error("BAD HTTP response: %s", response.status_code)
+        logger.error("%s", response.json()['title'])
+        logger.error("Did not get list of HIPS. Quitting.")
+        sys.exit("Did not get list of HIPS. Quitting.")
+
+    add_overlay(base_image, secrets_dict,
+                logger, tweet_content_dir, BEST_NAME,
+                best_survey['ID'])
+
+    return best_survey['ID']

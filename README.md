@@ -4,11 +4,10 @@ Robot GALAH
 This is a small Python script to tweet information about a random star from the [GALAH survey](https://www.galah-survey.org).
 
 Here's what I have used to run it:
-* Python 3.9+
+* Python 3.7+
 * [Tweepy](http://www.tweepy.org/)
 * [pyvo](https://pyvo.readthedocs.io/en/latest/)
 * [astropy](https://www.astropy.org)
-* [mocpy](https://cds-astro.github.io/mocpy/)
 * matplotlib, numpy, pandas, Pillow, requests
 * galah_plotting: this is a personal package I have for some convenience functions to plot GALAH data.
 
