@@ -39,8 +39,14 @@ def download_image(survey_url, the_star, logger, base_image):
         logger.error("Did not get the sky image. Quitting.")
         sys.exit("Did not get the sky image. Quitting.")
 
-def get_best_survey(avail_hips, wanted_surveys):
+
+def get_best_survey(avail_hips, wanted_surveys, the_star):
+    """This ranks the avaiable HIPS in order of preference."""
     rankings = dict(zip(wanted_surveys,range(len(wanted_surveys))))
+    # The PanSTARRS MOC is wrong and you get blank images for stars south of -29.5.
+    # So make the PanSTARRS ranking really low for those stars.
+    if the_star['dec'] < -29.5:
+        rankings["CDS/P/PanSTARRS/DR1/color-z-zg-g"] = 999
     best_survey_id = wanted_surveys[min([rankings[avail_hip['ID']] for avail_hip in avail_hips])]
     return list(filter(lambda x:x["ID"] == best_survey_id, avail_hips))[0]
 
@@ -107,7 +113,7 @@ def get_hips_image(the_star, BEST_NAME, secrets_dict):
         avail_hips = response.json()
         for possible_survey in avail_hips:
             logger.debug("Possible HIPS options: %s", possible_survey['ID'])
-        best_survey = get_best_survey(avail_hips, wanted_surveys)
+        best_survey = get_best_survey(avail_hips, wanted_surveys, the_star)
         logger.info("The best ranking survey is: %s", best_survey['ID'])
         download_image(best_survey['hips_service_url'], the_star, logger, base_image)
         del response
