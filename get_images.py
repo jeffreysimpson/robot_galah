@@ -123,8 +123,9 @@ def get_hips_image(the_star, BEST_NAME, secrets_dict):
         logger.error("Did not get list of HIPS. Quitting.")
         sys.exit("Did not get list of HIPS. Quitting.")
 
+    image_source = " ".join(best_survey['ID'].split("/")[2:])
     add_overlay(base_image, secrets_dict,
                 logger, tweet_content_dir, BEST_NAME,
-                best_survey['ID'])
+                image_source)
 
-    return best_survey['ID']
+    return image_source
