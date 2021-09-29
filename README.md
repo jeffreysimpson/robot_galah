@@ -13,7 +13,7 @@ Here's what I have used to run it:
 
 Data
 -------------
-The star is randomly chosen from [GALAH DR3](https://docs.datacentral.org.au/galah/dr3/overview/). As recommended by the GALAH team, all the stars have `flag_sp = 0`, `flag_fe_h = 0`, and `snr_c3_iraf > 30`. Ages, distances, and masses are from the [`galah_dr3.vac_ages` value-added catalogue](https://docs.datacentral.org.au/galah/dr3/value-added-catalogues/).
+The star is randomly chosen from [GALAH DR3](https://docs.datacentral.org.au/galah/dr3/overview/). As recommended by the GALAH team, all the stars have `flag_sp = 0`, `flag_fe_h = 0`, and `snr_c3_iraf > 30`. Ages, distances, and masses are from the [`galah_dr3.vac_ages` value-added catalogue](https://www.galah-survey.org/dr3/the_catalogues/).
 
 Images
 -------------
